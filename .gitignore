@@ -1,0 +1,59 @@
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build outputs
+dist/
+out/
+*.vsix
+
+# Testing
+coverage/
+.nyc_output/
+*.test.js
+*.spec.js
+
+# TypeScript
+*.tsbuildinfo
+
+# IDE
+.vscode/
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/launch.json
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+*.log
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# VS Code extension testing
+.vscode-test/
+.vscode-test-web/
+
+# Miscellaneous
+*.lock
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
