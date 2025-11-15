@@ -1,4 +1,4 @@
-# PromptCraft Testing Guide
+# BetterPrompt Testing Guide
 
 ## How to Test the Extension Yourself
 
@@ -62,7 +62,7 @@ npm run test:coverage
 
 2. **Configure the Extension**
    - Open VS Code settings: `Cmd+,` (Mac) or `Ctrl+,` (Windows/Linux)
-   - Search for "PromptCraft"
+   - Search for "BetterPrompt"
    - Paste your Groq API key into `Groq Api Key` field
    - (Optional) Adjust `Vagueness Threshold` (default: 30)
 
@@ -78,7 +78,7 @@ npm run test:coverage
 
 ##### Test 1: Vague Prompt Detection
 1. In the Extension Development Host window, press `Cmd+Shift+P` (Mac) or `Ctrl+Shift+P` (Windows/Linux)
-2. Type "PromptCraft: Optimize Current Prompt"
+2. Type "BetterPrompt: Optimize Current Prompt"
 3. Enter a vague prompt: `make a website`
 4. **Expected Results:**
    - Progress notification appears
@@ -210,7 +210,7 @@ npm run test:coverage
 ## Common Issues
 
 ### Issue: "Groq API key required"
-**Solution:** Configure API key in VS Code settings (`promptcraft.groqApiKey`)
+**Solution:** Configure API key in VS Code settings (`betterprompt.groqApiKey`)
 
 ### Issue: Tests fail with TypeScript errors
 **Solution:**
@@ -238,7 +238,7 @@ npm run compile
 
 ### Enable Debug Logs
 1. Open VS Code output panel: `View > Output`
-2. Select "PromptCraft" from dropdown
+2. Select "BetterPrompt" from dropdown
 3. Watch logs during command execution
 
 ### Inspect Network Requests

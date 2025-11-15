@@ -200,9 +200,9 @@ describe('MCP Server Tool Functions', () => {
     });
 
     it('should define server name and version', () => {
-      // Documents: new Server({ name: 'promptcraft', version: '0.1.0' }, ...)
-      const serverConfig = { name: 'promptcraft', version: '0.1.0' };
-      expect(serverConfig.name).toBe('promptcraft');
+      // Documents: new Server({ name: 'betterprompt', version: '0.1.0' }, ...)
+      const serverConfig = { name: 'betterprompt', version: '0.1.0' };
+      expect(serverConfig.name).toBe('betterprompt');
       expect(serverConfig.version).toBe('0.1.0');
     });
 

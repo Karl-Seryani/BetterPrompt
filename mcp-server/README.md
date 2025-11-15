@@ -1,10 +1,10 @@
-# PromptCraft MCP Server
+# BetterPrompt MCP Server
 
-MCP (Model Context Protocol) server for PromptCraft - provides intelligent prompt enhancement tools for AI assistants.
+MCP (Model Context Protocol) server for BetterPrompt - provides intelligent prompt enhancement tools for AI assistants.
 
 ## Overview
 
-This MCP server exposes PromptCraft's prompt analysis and enhancement capabilities to AI assistants like Claude Code, enabling automatic prompt optimization behind the scenes.
+This MCP server exposes BetterPrompt's prompt analysis and enhancement capabilities to AI assistants like Claude Code, enabling automatic prompt optimization behind the scenes.
 
 ## Tools Provided
 
@@ -52,11 +52,11 @@ Enhances a vague prompt to be more specific and actionable.
 
 ## Installation
 
-Already configured in your `.claude.json` for the PromptCraft project!
+Already configured in your `.claude.json` for the BetterPrompt project!
 
 ## Usage with Claude Code
 
-The MCP server is automatically loaded when you start Claude Code in the PromptCraft directory.
+The MCP server is automatically loaded when you start Claude Code in the BetterPrompt directory.
 
 ### Method 1: Let Claude Use It Automatically
 Just chat normally - Claude will automatically use `enhance_prompt` when it detects a vague prompt:

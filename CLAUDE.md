@@ -1,4 +1,4 @@
-# PromptCraft - AI Context File
+# BetterPrompt - AI Context File
 
 **Last Updated:** 2025-01-10
 **Status:** Sprint 3 COMPLETE ✅ | Sprint 4 IN PROGRESS 🚀
@@ -25,11 +25,11 @@
 
 ## Project Overview
 
-**PromptCraft** is a VS Code extension that crafts better prompts for AI coding assistants through intelligent analysis and AI-powered enhancement. It analyzes prompts for vagueness, enhances them using Groq AI with persona-based improvements, and shows before/after diffs for user approval.
+**BetterPrompt** is a VS Code extension that crafts better prompts for AI coding assistants through intelligent analysis and AI-powered enhancement. It analyzes prompts for vagueness, enhances them using Groq AI with persona-based improvements, and shows before/after diffs for user approval.
 
 **Tech Stack:** TypeScript 5.3.3 (strict mode), VS Code Extension API 1.85+, sql.js 1.10.3, Jest 29.7.0, Node.js 20.x
 
-**Recent Change:** Renamed from "PromptForge" to "PromptCraft" to avoid marketplace confusion.
+**Recent Change:** Renamed from "PromptForge" to "BetterPrompt" to avoid marketplace confusion.
 
 **Main Directories:**
 - `src/` - Source code (extension.ts, analyzer/, rewriter/, db/)
@@ -61,20 +61,20 @@
 7. Zero-config support for Copilot/Claude Code users ✅ NEW
 
 **Commands:**
-- `promptcraft.optimizePrompt` - Main optimization command ✅
-- `promptcraft.resetOnboarding` - Reset onboarding flow (Testing only) ✅
-- `promptcraft.showSettings` - Settings panel (Sprint 4)
-- `promptcraft.showAnalytics` - Analytics dashboard (Sprint 4)
-- `promptcraft.manageTemplates` - Template manager (Sprint 4)
+- `betterprompt.optimizePrompt` - Main optimization command ✅
+- `betterprompt.resetOnboarding` - Reset onboarding flow (Testing only) ✅
+- `betterprompt.showSettings` - Settings panel (Sprint 4)
+- `betterprompt.showAnalytics` - Analytics dashboard (Sprint 4)
+- `betterprompt.manageTemplates` - Template manager (Sprint 4)
 
 **Settings (package.json):**
-- `promptcraft.enabled` - Enable/disable extension (default: true) ✅
-- `promptcraft.groqApiKey` - Groq API key for fallback (optional) ✅
-- `promptcraft.userLevel` - Experience level: auto/beginner/developer (default: auto) ✅
-- `promptcraft.preferredModel` - Model preference: auto/gpt-4/claude/groq (default: auto) ✅ NEW
-- `promptcraft.vaguenessThreshold` - Min score to trigger rewrite (default: 30) ✅
-- `promptcraft.autoOptimize` - Auto-optimize without confirmation (default: false) ✅
-- `promptcraft.showDiff` - Show before/after diff (default: true) ✅
+- `betterprompt.enabled` - Enable/disable extension (default: true) ✅
+- `betterprompt.groqApiKey` - Groq API key for fallback (optional) ✅
+- `betterprompt.userLevel` - Experience level: auto/beginner/developer (default: auto) ✅
+- `betterprompt.preferredModel` - Model preference: auto/gpt-4/claude/groq (default: auto) ✅ NEW
+- `betterprompt.vaguenessThreshold` - Min score to trigger rewrite (default: 30) ✅
+- `betterprompt.autoOptimize` - Auto-optimize without confirmation (default: false) ✅
+- `betterprompt.showDiff` - Show before/after diff (default: true) ✅
 
 ### ✅ Sprint 3 COMPLETE (Advanced Features + TDD Enforcement)
 
@@ -82,13 +82,13 @@
 - ✅ First-run onboarding flow with persona selection (Developer/Beginner/Auto)
 - ✅ Persona-based prompt enhancement fully integrated (Developer/Beginner/Auto modes)
 - ✅ Fixed TypeScript strict mode violations (no `any` types)
-- ✅ Reset onboarding command for testing (`promptcraft.resetOnboarding`)
+- ✅ Reset onboarding command for testing (`betterprompt.resetOnboarding`)
 - ✅ VS Code Language Model API integration (Copilot/Claude Code support)
 - ✅ Intelligent fallback system: VS Code LM → Groq → Error
 - ✅ Zero-config experience for Copilot/Claude Code users
 - ✅ User preference for model selection (Auto/GPT-4/Claude/Groq)
 - ✅ Model name displayed in enhancement notification
-- ✅ **Chat Participant (@promptcraft)** - GitHub Copilot integration with review/auto modes ✅ NEW
+- ✅ **Chat Participant (@betterprompt)** - GitHub Copilot integration with review/auto modes ✅ NEW
 - ✅ **MCP Server** - Model Context Protocol integration for Claude Code ✅ NEW
 - ✅ Project-specific `.claude.json` for MCP configuration ✅ NEW
 
@@ -313,28 +313,28 @@ npm run format   # Auto-format
 ## Configuration Settings
 
 **User Settings (package.json):**
-- `promptcraft.enabled` - Enable/disable extension (default: true)
-- `promptcraft.groqApiKey` - Groq API key for AI enhancement
-- `promptcraft.userLevel` - Experience level (auto/beginner/developer)
-- `promptcraft.vaguenessThreshold` - Min score to trigger rewrite (default: 30)
-- `promptcraft.autoOptimize` - Auto-optimize without confirmation
-- `promptcraft.showDiff` - Show before/after diff view
+- `betterprompt.enabled` - Enable/disable extension (default: true)
+- `betterprompt.groqApiKey` - Groq API key for AI enhancement
+- `betterprompt.userLevel` - Experience level (auto/beginner/developer)
+- `betterprompt.vaguenessThreshold` - Min score to trigger rewrite (default: 30)
+- `betterprompt.autoOptimize` - Auto-optimize without confirmation
+- `betterprompt.showDiff` - Show before/after diff view
 
 ---
 
 ## MCP Servers Configured
 
 **Active in Claude Code (6 servers):**
-1. ✅ **promptcraft** - PromptCraft's own MCP server for prompt analysis/enhancement ✅ NEW
+1. ✅ **betterprompt** - BetterPrompt's own MCP server for prompt analysis/enhancement ✅ NEW
 2. ✅ **context7** - Up-to-date library documentation (add "use context7" to prompts for latest docs)
-3. ✅ **filesystem** - File operations (scoped to PromptCraft directory)
+3. ✅ **filesystem** - File operations (scoped to BetterPrompt directory)
 4. ✅ **memory** - Knowledge graph for context persistence across sessions
 5. ✅ **sequential-thinking** - Complex problem-solving and algorithm design assistance
 6. ✅ **brave-search** - Web search capabilities (API key configured)
 
 **Configuration Locations:**
 - Global: `~/.claude.json` (context7, filesystem, memory, sequential-thinking, brave-search)
-- Project-specific: `.claude.json` (promptcraft MCP server) ✅ NEW
+- Project-specific: `.claude.json` (betterprompt MCP server) ✅ NEW
 
 **Usage Notes:**
 - MCP servers load on session start - restart Claude Code after adding new servers

@@ -1,8 +1,8 @@
-# PromptCraft
+# BetterPrompt
 
 **Craft better prompts for AI coding assistants through intelligent analysis and enhancement**
 
-PromptCraft is a VS Code extension that analyzes your prompts for vagueness, enhances them with AI-powered rewriting, and helps you get better responses from AI coding assistants like Claude Code.
+BetterPrompt is a VS Code extension that analyzes your prompts for vagueness, enhances them with AI-powered rewriting, and helps you get better responses from AI coding assistants like Claude Code.
 
 ## Features
 
@@ -61,7 +61,7 @@ Please provide recommendations for the tech stack and help me get started with t
 ### From VS Code Marketplace (Coming Soon)
 1. Open VS Code
 2. Go to Extensions (Ctrl+Shift+X / Cmd+Shift+X)
-3. Search for "PromptCraft"
+3. Search for "BetterPrompt"
 4. Click Install
 
 ### From VSIX (Development)
@@ -74,8 +74,8 @@ Please provide recommendations for the tech stack and help me get started with t
 ### From Source
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/promptcraft.git
-cd promptcraft
+git clone https://github.com/yourusername/betterprompt.git
+cd betterprompt
 
 # Install dependencies
 npm install
@@ -101,12 +101,12 @@ npm run package
 2. **Configure Groq API Key**
    - Get a free API key from [console.groq.com/keys](https://console.groq.com/keys)
    - Open Settings (Ctrl+, / Cmd+,)
-   - Search for "PromptCraft"
+   - Search for "BetterPrompt"
    - Paste your API key in `Groq Api Key` field
 
 3. **Optimize a Prompt**
    - Open Command Palette (Ctrl+Shift+P / Cmd+Shift+P)
-   - Type "PromptCraft: Optimize Current Prompt"
+   - Type "BetterPrompt: Optimize Current Prompt"
    - Enter your vague prompt
    - Review the enhanced version
 
@@ -117,20 +117,20 @@ npm run package
 
 ## Configuration
 
-Access settings via File > Preferences > Settings, then search for "PromptCraft":
+Access settings via File > Preferences > Settings, then search for "BetterPrompt":
 
 | Setting | Description | Default |
 |---------|-------------|---------|
-| `promptcraft.enabled` | Enable/disable prompt optimization | `true` |
-| `promptcraft.groqApiKey` | Groq API key for AI-powered rewriting | `""` |
-| `promptcraft.userLevel` | Experience level (auto/beginner/developer) | `auto` |
-| `promptcraft.vaguenessThreshold` | Min score (0-100) to trigger rewriting | `30` |
-| `promptcraft.autoOptimize` | Automatically optimize without confirmation | `false` |
-| `promptcraft.showDiff` | Show before/after diff view | `true` |
+| `betterprompt.enabled` | Enable/disable prompt optimization | `true` |
+| `betterprompt.groqApiKey` | Groq API key for AI-powered rewriting | `""` |
+| `betterprompt.userLevel` | Experience level (auto/beginner/developer) | `auto` |
+| `betterprompt.vaguenessThreshold` | Min score (0-100) to trigger rewriting | `30` |
+| `betterprompt.autoOptimize` | Automatically optimize without confirmation | `false` |
+| `betterprompt.showDiff` | Show before/after diff view | `true` |
 
 ## Persona System
 
-PromptCraft enhances prompts differently based on your experience level:
+BetterPrompt enhances prompts differently based on your experience level:
 
 ### Auto Mode (Default)
 Automatically detects from your prompt:
@@ -161,10 +161,10 @@ Template management and custom templates are planned for Sprint 4.
 
 | Command | Description |
 |---------|-------------|
-| `promptcraft.optimizePrompt` | Optimize current prompt |
-| `promptcraft.showSettings` | Open PromptCraft settings |
-| `promptcraft.showAnalytics` | View analytics dashboard (Coming Soon) |
-| `promptcraft.manageTemplates` | Manage prompt templates (Coming Soon) |
+| `betterprompt.optimizePrompt` | Optimize current prompt |
+| `betterprompt.showSettings` | Open BetterPrompt settings |
+| `betterprompt.showAnalytics` | View analytics dashboard (Coming Soon) |
+| `betterprompt.manageTemplates` | Manage prompt templates (Coming Soon) |
 
 ## Analytics (Coming Soon)
 
@@ -176,7 +176,7 @@ Analytics dashboard is planned for Sprint 4:
 - AI tokens used
 - Enhancement confidence scores
 
-Access via Command Palette > "PromptCraft: View Analytics Dashboard"
+Access via Command Palette > "BetterPrompt: View Analytics Dashboard"
 
 ## Development
 
@@ -205,7 +205,7 @@ npm run test:coverage
 
 ### Project Structure
 ```
-promptcraft/
+betterprompt/
 ├── src/
 │   ├── extension.ts        # Entry point
 │   ├── analyzer/           # Prompt analysis logic
@@ -293,14 +293,14 @@ We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.
 
 ## FAQ
 
-**Q: Does PromptCraft send my code to external servers?**
+**Q: Does BetterPrompt send my code to external servers?**
 A: Only prompts are sent to Groq AI for enhancement (optional). All analysis is done locally. Your code stays on your machine.
 
 **Q: Will this work with GitHub Copilot / Claude Code?**
-A: Yes! PromptCraft enhances prompts you can use with any AI coding assistant.
+A: Yes! BetterPrompt enhances prompts you can use with any AI coding assistant.
 
 **Q: How much does it cost?**
-A: PromptCraft is free and open source (MIT License). Groq API is also free (unlimited tier).
+A: BetterPrompt is free and open source (MIT License). Groq API is also free (unlimited tier).
 
 **Q: Can I use this in commercial projects?**
 A: Yes, the MIT License allows commercial use.
@@ -314,8 +314,8 @@ A: Analytics data is stored locally in a SQLite database (sql.js) in your VS Cod
 ## Support
 
 - **Documentation:** [docs/](docs/)
-- **Issues:** [GitHub Issues](https://github.com/yourusername/promptcraft/issues)
-- **Discussions:** [GitHub Discussions](https://github.com/yourusername/promptcraft/discussions)
+- **Issues:** [GitHub Issues](https://github.com/yourusername/betterprompt/issues)
+- **Discussions:** [GitHub Discussions](https://github.com/yourusername/betterprompt/discussions)
 
 ## License
 

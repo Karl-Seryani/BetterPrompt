@@ -95,7 +95,7 @@ describe('Chat Participant', () => {
       registerChatParticipant(mockContext);
 
       expect(vscode.chat.createChatParticipant).toHaveBeenCalledWith(
-        'promptcraft.chat',
+        'betterprompt.chat',
         expect.any(Function)
       );
     });

@@ -1,11 +1,11 @@
 {
-  "name": "promptcraft-mcp-server",
+  "name": "betterprompt-mcp-server",
   "version": "0.1.0",
-  "description": "MCP server for PromptCraft - intelligent prompt enhancement for AI assistants",
+  "description": "MCP server for BetterPrompt - intelligent prompt enhancement for AI assistants",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
-    "promptcraft-mcp": "./dist/index.js"
+    "betterprompt-mcp": "./dist/index.js"
   },
   "scripts": {
     "build": "tsc",
@@ -22,7 +22,7 @@
     "ai",
     "claude"
   ],
-  "author": "PromptCraft",
+  "author": "BetterPrompt",
   "license": "MIT",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.4",

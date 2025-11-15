@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * PromptCraft MCP Server
+ * BetterPrompt MCP Server
  * Provides intelligent prompt enhancement tools for AI assistants via Model Context Protocol
  */
 

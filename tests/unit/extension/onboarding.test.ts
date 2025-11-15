@@ -61,13 +61,13 @@ describe('Onboarding Flow', () => {
       (vscode.window.showInformationMessage as jest.Mock).mockResolvedValue('Get Started');
 
       await vscode.window.showInformationMessage(
-        'Welcome to PromptCraft! 🎨\n\nCraft better prompts for AI assistants with intelligent analysis and enhancement.',
+        'Welcome to BetterPrompt! 🎨\n\nCraft better prompts for AI assistants with intelligent analysis and enhancement.',
         'Get Started',
         'Skip Setup'
       );
 
       expect(vscode.window.showInformationMessage).toHaveBeenCalledWith(
-        expect.stringContaining('Welcome to PromptCraft'),
+        expect.stringContaining('Welcome to BetterPrompt'),
         'Get Started',
         'Skip Setup'
       );
@@ -77,7 +77,7 @@ describe('Onboarding Flow', () => {
       (vscode.window.showInformationMessage as jest.Mock).mockResolvedValue('Skip Setup');
 
       const result = await vscode.window.showInformationMessage(
-        'Welcome to PromptCraft! 🎨\n\nCraft better prompts for AI assistants with intelligent analysis and enhancement.',
+        'Welcome to BetterPrompt! 🎨\n\nCraft better prompts for AI assistants with intelligent analysis and enhancement.',
         'Get Started',
         'Skip Setup'
       );
@@ -89,7 +89,7 @@ describe('Onboarding Flow', () => {
       (vscode.window.showInformationMessage as jest.Mock).mockResolvedValue(undefined);
 
       const result = await vscode.window.showInformationMessage(
-        'Welcome to PromptCraft! 🎨',
+        'Welcome to BetterPrompt! 🎨',
         'Get Started',
         'Skip Setup'
       );
@@ -117,7 +117,7 @@ describe('Onboarding Flow', () => {
     const autoOption = {
       label: '$(wand) Auto-Detect',
       description: 'Smart detection based on your prompts (recommended)',
-      detail: 'PromptCraft will automatically detect your experience level from your prompts and adjust accordingly',
+      detail: 'BetterPrompt will automatically detect your experience level from your prompts and adjust accordingly',
       value: 'auto',
     };
 
@@ -126,7 +126,7 @@ describe('Onboarding Flow', () => {
 
       await vscode.window.showQuickPick([developerOption, beginnerOption, autoOption], {
         title: 'Choose Your Experience Level',
-        placeHolder: 'Select how PromptCraft should enhance your prompts',
+        placeHolder: 'Select how BetterPrompt should enhance your prompts',
         ignoreFocusOut: true,
       });
 
@@ -214,7 +214,7 @@ describe('Onboarding Flow', () => {
       (vscode.window.showInformationMessage as jest.Mock).mockResolvedValue(undefined);
 
       await vscode.window.showInformationMessage(
-        'PromptCraft is configured for Software Developers! Your prompts will emphasize TDD, architecture, and production best practices.'
+        'BetterPrompt is configured for Software Developers! Your prompts will emphasize TDD, architecture, and production best practices.'
       );
 
       expect(vscode.window.showInformationMessage).toHaveBeenCalledWith(expect.stringContaining('Software Developers'));
@@ -224,7 +224,7 @@ describe('Onboarding Flow', () => {
       (vscode.window.showInformationMessage as jest.Mock).mockResolvedValue(undefined);
 
       await vscode.window.showInformationMessage(
-        'PromptCraft is configured for beginners! Your prompts will be broken down into simple, easy-to-follow steps.'
+        'BetterPrompt is configured for beginners! Your prompts will be broken down into simple, easy-to-follow steps.'
       );
 
       expect(vscode.window.showInformationMessage).toHaveBeenCalledWith(expect.stringContaining('beginners'));
@@ -234,7 +234,7 @@ describe('Onboarding Flow', () => {
       (vscode.window.showInformationMessage as jest.Mock).mockResolvedValue(undefined);
 
       await vscode.window.showInformationMessage(
-        'PromptCraft is configured with auto-detection! It will intelligently adapt to your experience level.'
+        'BetterPrompt is configured with auto-detection! It will intelligently adapt to your experience level.'
       );
 
       expect(vscode.window.showInformationMessage).toHaveBeenCalledWith(expect.stringContaining('auto-detection'));

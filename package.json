@@ -1,9 +1,9 @@
 {
-  "name": "promptcraft",
-  "displayName": "PromptCraft",
+  "name": "betterprompt",
+  "displayName": "BetterPrompt",
   "description": "Craft better prompts for AI coding assistants through intelligent analysis and enhancement",
   "version": "0.1.0",
-  "publisher": "promptcraft",
+  "publisher": "betterprompt",
   "engines": {
     "vscode": "^1.85.0"
   },
@@ -25,30 +25,30 @@
   "contributes": {
     "commands": [
       {
-        "command": "promptcraft.optimizePrompt",
-        "title": "PromptCraft: Optimize Current Prompt"
+        "command": "betterprompt.optimizePrompt",
+        "title": "BetterPrompt: Optimize Current Prompt"
       },
       {
-        "command": "promptcraft.showSettings",
-        "title": "PromptCraft: Open Settings"
+        "command": "betterprompt.showSettings",
+        "title": "BetterPrompt: Open Settings"
       },
       {
-        "command": "promptcraft.showAnalytics",
-        "title": "PromptCraft: View Analytics Dashboard"
+        "command": "betterprompt.showAnalytics",
+        "title": "BetterPrompt: View Analytics Dashboard"
       },
       {
-        "command": "promptcraft.manageTemplates",
-        "title": "PromptCraft: Manage Templates"
+        "command": "betterprompt.manageTemplates",
+        "title": "BetterPrompt: Manage Templates"
       },
       {
-        "command": "promptcraft.resetOnboarding",
-        "title": "PromptCraft: Reset Onboarding (Testing)"
+        "command": "betterprompt.resetOnboarding",
+        "title": "BetterPrompt: Reset Onboarding (Testing)"
       }
     ],
     "chatParticipants": [
       {
-        "id": "promptcraft.chat",
-        "name": "promptcraft",
+        "id": "betterprompt.chat",
+        "name": "betterprompt",
         "description": "Enhance your prompts with intelligent analysis before sending to AI",
         "isSticky": true,
         "commands": [
@@ -64,19 +64,19 @@
       }
     ],
     "configuration": {
-      "title": "PromptCraft",
+      "title": "BetterPrompt",
       "properties": {
-        "promptcraft.enabled": {
+        "betterprompt.enabled": {
           "type": "boolean",
           "default": true,
-          "description": "Enable/disable PromptCraft prompt optimization"
+          "description": "Enable/disable BetterPrompt prompt optimization"
         },
-        "promptcraft.groqApiKey": {
+        "betterprompt.groqApiKey": {
           "type": "string",
           "default": "",
           "description": "Groq API key for AI-powered prompt rewriting (get free key at console.groq.com)"
         },
-        "promptcraft.userLevel": {
+        "betterprompt.userLevel": {
           "type": "string",
           "enum": [
             "auto",
@@ -91,19 +91,19 @@
           ],
           "description": "Your experience level for prompt enhancement"
         },
-        "promptcraft.vaguenessThreshold": {
+        "betterprompt.vaguenessThreshold": {
           "type": "number",
           "default": 30,
           "minimum": 0,
           "maximum": 100,
           "description": "Minimum vagueness score (0-100) to trigger prompt rewriting"
         },
-        "promptcraft.autoOptimize": {
+        "betterprompt.autoOptimize": {
           "type": "boolean",
           "default": false,
           "description": "Automatically optimize prompts without confirmation"
         },
-        "promptcraft.preferredModel": {
+        "betterprompt.preferredModel": {
           "type": "string",
           "enum": [
             "auto",
@@ -120,12 +120,12 @@
           ],
           "description": "Preferred AI model for prompt enhancement"
         },
-        "promptcraft.showDiff": {
+        "betterprompt.showDiff": {
           "type": "boolean",
           "default": true,
           "description": "Show before/after diff for optimized prompts"
         },
-        "promptcraft.chatMode": {
+        "betterprompt.chatMode": {
           "type": "string",
           "enum": [
             "review",
@@ -136,7 +136,7 @@
             "Show enhancement before sending (teaching mode)",
             "Auto-enhance and send to language model (transparent mode)"
           ],
-          "description": "Default behavior for @promptcraft chat participant"
+          "description": "Default behavior for @betterprompt chat participant"
         }
       }
     }
@@ -180,7 +180,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/promptcraft.git"
+    "url": "https://github.com/yourusername/BetterPrompt.git"
   },
   "license": "MIT",
   "icon": "icon.png"

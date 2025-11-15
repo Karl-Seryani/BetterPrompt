@@ -10,27 +10,27 @@ export function activate(context: vscode.ExtensionContext): void {
   // Extension activated successfully
 
   // Register the optimize prompt command
-  const optimizePromptCommand = vscode.commands.registerCommand('promptcraft.optimizePrompt', () => {
+  const optimizePromptCommand = vscode.commands.registerCommand('betterprompt.optimizePrompt', () => {
     void handleOptimizePrompt(context);
   });
 
   // Register the settings command
-  const showSettingsCommand = vscode.commands.registerCommand('promptcraft.showSettings', async () => {
+  const showSettingsCommand = vscode.commands.registerCommand('betterprompt.showSettings', async () => {
     await handleShowSettings();
   });
 
   // Register the analytics dashboard command
-  const showAnalyticsCommand = vscode.commands.registerCommand('promptcraft.showAnalytics', () => {
+  const showAnalyticsCommand = vscode.commands.registerCommand('betterprompt.showAnalytics', () => {
     handleShowAnalytics();
   });
 
   // Register the template management command
-  const manageTemplatesCommand = vscode.commands.registerCommand('promptcraft.manageTemplates', () => {
+  const manageTemplatesCommand = vscode.commands.registerCommand('betterprompt.manageTemplates', () => {
     handleManageTemplates();
   });
 
   // Register the reset onboarding command (for testing)
-  const resetOnboardingCommand = vscode.commands.registerCommand('promptcraft.resetOnboarding', async () => {
+  const resetOnboardingCommand = vscode.commands.registerCommand('betterprompt.resetOnboarding', async () => {
     await context.globalState.update('hasCompletedOnboarding', false);
     void vscode.window.showInformationMessage('Onboarding reset! Reload the window to see it again.');
   });
@@ -44,7 +44,7 @@ export function activate(context: vscode.ExtensionContext): void {
     resetOnboardingCommand
   );
 
-  // Register chat participant for @promptcraft in VS Code chat
+  // Register chat participant for @betterprompt in VS Code chat
   registerChatParticipant(context);
 
   // Show welcome message on first activation
@@ -63,11 +63,11 @@ export function deactivate(): void {
  * Handler for the optimize prompt command
  */
 async function handleOptimizePrompt(context: vscode.ExtensionContext): Promise<void> {
-  const config = vscode.workspace.getConfiguration('promptcraft');
+  const config = vscode.workspace.getConfiguration('betterprompt');
   const enabled = config.get<boolean>('enabled', true);
 
   if (!enabled) {
-    void vscode.window.showWarningMessage('PromptCraft is currently disabled. Enable it in settings.');
+    void vscode.window.showWarningMessage('BetterPrompt is currently disabled. Enable it in settings.');
     return;
   }
 
@@ -89,7 +89,7 @@ async function handleOptimizePrompt(context: vscode.ExtensionContext): Promise<v
   const result = await vscode.window.withProgress(
     {
       location: vscode.ProgressLocation.Notification,
-      title: 'PromptCraft',
+      title: 'BetterPrompt',
       cancellable: false,
     },
     async (progress): Promise<RewriteWorkflowResult | null> => {
@@ -111,7 +111,7 @@ async function handleOptimizePrompt(context: vscode.ExtensionContext): Promise<v
         return await rewriter.processPrompt(userPrompt);
       } catch (error) {
         void vscode.window.showErrorMessage(
-          `PromptCraft Error: ${error instanceof Error ? error.message : String(error)}`
+          `BetterPrompt Error: ${error instanceof Error ? error.message : String(error)}`
         );
         return null;
       }
@@ -124,7 +124,7 @@ async function handleOptimizePrompt(context: vscode.ExtensionContext): Promise<v
   }
 
   if (result.error) {
-    void vscode.window.showErrorMessage(`PromptCraft Error: ${result.error}`);
+    void vscode.window.showErrorMessage(`BetterPrompt Error: ${result.error}`);
     return;
   }
 
@@ -143,7 +143,7 @@ async function handleOptimizePrompt(context: vscode.ExtensionContext): Promise<v
     const enhancedPrompt = rewrite.enhanced;
 
     const choice = await vscode.window.showInformationMessage(
-      `PromptCraft improved your prompt!\n\nModel: ${rewrite.model}\nVagueness Score: ${vaguenessScore}/100\nConfidence: ${confidencePercent}%`,
+      `BetterPrompt improved your prompt!\n\nModel: ${rewrite.model}\nVagueness Score: ${vaguenessScore}/100\nConfidence: ${confidencePercent}%`,
       'View Changes',
       'Copy Enhanced',
       'Dismiss'
@@ -162,8 +162,8 @@ async function handleOptimizePrompt(context: vscode.ExtensionContext): Promise<v
  * Shows a diff view comparing original and enhanced prompts
  */
 async function showDiff(context: vscode.ExtensionContext, original: string, enhanced: string): Promise<void> {
-  const originalUri = vscode.Uri.parse('promptcraft:original.txt');
-  const enhancedUri = vscode.Uri.parse('promptcraft:enhanced.txt');
+  const originalUri = vscode.Uri.parse('betterprompt:original.txt');
+  const enhancedUri = vscode.Uri.parse('betterprompt:enhanced.txt');
 
   // Register text document content provider
   const provider = new (class implements vscode.TextDocumentContentProvider {
@@ -175,18 +175,18 @@ async function showDiff(context: vscode.ExtensionContext, original: string, enha
     }
   })();
 
-  context.subscriptions.push(vscode.workspace.registerTextDocumentContentProvider('promptcraft', provider));
+  context.subscriptions.push(vscode.workspace.registerTextDocumentContentProvider('betterprompt', provider));
 
   // Open diff view
-  await vscode.commands.executeCommand('vscode.diff', originalUri, enhancedUri, 'PromptCraft: Original ↔ Enhanced');
+  await vscode.commands.executeCommand('vscode.diff', originalUri, enhancedUri, 'BetterPrompt: Original ↔ Enhanced');
 }
 
 /**
  * Handler for showing settings
  */
 async function handleShowSettings(): Promise<void> {
-  // Open VS Code settings filtered to PromptCraft
-  await vscode.commands.executeCommand('workbench.action.openSettings', 'promptcraft');
+  // Open VS Code settings filtered to BetterPrompt
+  await vscode.commands.executeCommand('workbench.action.openSettings', 'betterprompt');
 }
 
 /**
@@ -194,7 +194,7 @@ async function handleShowSettings(): Promise<void> {
  */
 function handleShowAnalytics(): void {
   // TODO: Implement analytics dashboard
-  void vscode.window.showInformationMessage('PromptCraft: Analytics Dashboard - Coming Soon!');
+  void vscode.window.showInformationMessage('BetterPrompt: Analytics Dashboard - Coming Soon!');
 }
 
 /**
@@ -202,7 +202,7 @@ function handleShowAnalytics(): void {
  */
 function handleManageTemplates(): void {
   // TODO: Implement template management UI
-  void vscode.window.showInformationMessage('PromptCraft: Template Manager - Coming Soon!');
+  void vscode.window.showInformationMessage('BetterPrompt: Template Manager - Coming Soon!');
 }
 
 /**
@@ -210,13 +210,13 @@ function handleManageTemplates(): void {
  */
 function showWelcomeMessage(context: vscode.ExtensionContext): void {
   const hasCompletedOnboarding = context.globalState.get<boolean>('hasCompletedOnboarding', false);
-  console.log('[PromptCraft] hasCompletedOnboarding:', hasCompletedOnboarding);
+  console.log('[BetterPrompt] hasCompletedOnboarding:', hasCompletedOnboarding);
 
   if (!hasCompletedOnboarding) {
-    console.log('[PromptCraft] Showing onboarding flow...');
+    console.log('[BetterPrompt] Showing onboarding flow...');
     void showOnboardingFlow(context);
   } else {
-    console.log('[PromptCraft] Onboarding already completed, skipping.');
+    console.log('[BetterPrompt] Onboarding already completed, skipping.');
   }
 }
 
@@ -226,7 +226,7 @@ function showWelcomeMessage(context: vscode.ExtensionContext): void {
 async function showOnboardingFlow(context: vscode.ExtensionContext): Promise<void> {
   // Welcome message
   const welcomeChoice = await vscode.window.showInformationMessage(
-    'Welcome to PromptCraft! 🎨\n\nCraft better prompts for AI assistants with intelligent analysis and enhancement.',
+    'Welcome to BetterPrompt! 🎨\n\nCraft better prompts for AI assistants with intelligent analysis and enhancement.',
     'Get Started',
     'Skip Setup'
   );
@@ -258,7 +258,7 @@ async function showOnboardingFlow(context: vscode.ExtensionContext): Promise<voi
     {
       label: '$(wand) Auto-Detect',
       description: 'Smart detection based on your prompts (recommended)',
-      detail: 'PromptCraft will automatically detect your experience level from your prompts and adjust accordingly',
+      detail: 'BetterPrompt will automatically detect your experience level from your prompts and adjust accordingly',
       value: 'auto',
     },
   ];
@@ -266,7 +266,7 @@ async function showOnboardingFlow(context: vscode.ExtensionContext): Promise<voi
   const selectedLevel = await vscode.window.showQuickPick(levelOptions, {
     placeHolder: 'Pick the one that relates to you the most',
     ignoreFocusOut: true,
-    title: 'PromptCraft Setup',
+    title: 'BetterPrompt Setup',
   });
 
   if (!selectedLevel) {
@@ -276,20 +276,20 @@ async function showOnboardingFlow(context: vscode.ExtensionContext): Promise<voi
   }
 
   // Save the user's choice to settings
-  const config = vscode.workspace.getConfiguration('promptcraft');
+  const config = vscode.workspace.getConfiguration('betterprompt');
   await config.update('userLevel', selectedLevel.value, vscode.ConfigurationTarget.Global);
 
   // Show confirmation based on selection
   let confirmationMessage = '';
   if (selectedLevel.value === 'developer') {
     confirmationMessage =
-      'PromptCraft is now configured for Software Developers!\n\nYour prompts will include: TDD workflows, design patterns, security best practices, and production considerations.';
+      'BetterPrompt is now configured for Software Developers!\n\nYour prompts will include: TDD workflows, design patterns, security best practices, and production considerations.';
   } else if (selectedLevel.value === 'beginner') {
     confirmationMessage =
-      'PromptCraft is now configured for Beginners!\n\nYour prompts will be broken down into simple, step-by-step guidance with examples.';
+      'BetterPrompt is now configured for Beginners!\n\nYour prompts will be broken down into simple, step-by-step guidance with examples.';
   } else {
     confirmationMessage =
-      'PromptCraft is now configured for Auto-Detection!\n\nIt will automatically adapt to your experience level based on your prompts.';
+      'BetterPrompt is now configured for Auto-Detection!\n\nIt will automatically adapt to your experience level based on your prompts.';
   }
 
   const finalChoice = await vscode.window.showInformationMessage(
@@ -301,7 +301,7 @@ async function showOnboardingFlow(context: vscode.ExtensionContext): Promise<voi
 
   if (finalChoice === 'Try It Now') {
     // Run the optimize prompt command
-    await vscode.commands.executeCommand('promptcraft.optimizePrompt');
+    await vscode.commands.executeCommand('betterprompt.optimizePrompt');
   } else if (finalChoice === 'Setup API Key') {
     await handleShowSettings();
   }

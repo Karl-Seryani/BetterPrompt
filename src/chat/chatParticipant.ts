@@ -1,6 +1,6 @@
 /**
  * Chat Participant Handler
- * Provides seamless prompt enhancement via @promptcraft in VS Code chat
+ * Provides seamless prompt enhancement via @betterprompt in VS Code chat
  */
 
 import * as vscode from 'vscode';
@@ -15,16 +15,16 @@ export interface ChatParticipantConfig {
 }
 
 /**
- * Registers the PromptCraft chat participant
+ * Registers the BetterPrompt chat participant
  */
 export function registerChatParticipant(context: vscode.ExtensionContext): void {
   // Create the chat participant
   const participant = vscode.chat.createChatParticipant(
-    'promptcraft.chat',
+    'betterprompt.chat',
     async (request, _chatContext, stream, token) => {
       try {
         // Get configuration
-        const config = vscode.workspace.getConfiguration('promptcraft');
+        const config = vscode.workspace.getConfiguration('betterprompt');
         const chatConfig: ChatParticipantConfig = {
           groqApiKey: config.get<string>('groqApiKey', ''),
           userLevel: config.get<string>('userLevel', 'auto') as 'auto' | 'beginner' | 'developer',
@@ -37,7 +37,7 @@ export function registerChatParticipant(context: vscode.ExtensionContext): void 
         const userPrompt = request.prompt.trim();
 
         if (!userPrompt) {
-          stream.markdown('Please provide a prompt to enhance.\n\nExample: `@promptcraft make a login system`');
+          stream.markdown('Please provide a prompt to enhance.\n\nExample: `@betterprompt make a login system`');
           return;
         }
 
@@ -104,7 +104,7 @@ export function registerChatParticipant(context: vscode.ExtensionContext): void 
             stream.markdown(`\`\`\`\n${rewrite.enhanced}\n\`\`\`\n\n`);
             stream.markdown(`---\n\n`);
             stream.markdown(`💡 **Tip:** Use \`/auto\` for transparent mode (auto-sends to language model)\n`);
-            stream.markdown(`Example: \`@promptcraft /auto make a login system\``);
+            stream.markdown(`Example: \`@betterprompt /auto make a login system\``);
           }
           // Mode 2: Auto Mode (Transparent - send to LM and return response)
           else {
@@ -140,7 +140,7 @@ export function registerChatParticipant(context: vscode.ExtensionContext): void 
             // Add footer showing it was enhanced
             stream.markdown(`\n\n---\n`);
             stream.markdown(
-              `_✨ Prompt enhanced by PromptCraft (${analysis.score}/100 vagueness) using ${rewrite.model}_`
+              `_✨ Prompt enhanced by BetterPrompt (${analysis.score}/100 vagueness) using ${rewrite.model}_`
             );
           }
         }

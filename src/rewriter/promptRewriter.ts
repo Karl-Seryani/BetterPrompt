@@ -104,7 +104,7 @@ export class PromptRewriter {
           };
         } catch (vsCodeError) {
           // VS Code LM failed, try Groq fallback
-          console.log('[PromptCraft] VS Code LM failed, falling back to Groq:', vsCodeError);
+          console.log('[BetterPrompt] VS Code LM failed, falling back to Groq:', vsCodeError);
         }
       }
 
