@@ -1,0 +1,75 @@
+# Source files
+src/**
+tests/**
+mcp-server/src/**
+mcp-server/tests/**
+
+# TypeScript config
+tsconfig.json
+mcp-server/tsconfig.json
+
+# Test config
+jest.config.js
+mcp-server/jest.config.js
+
+# Development
+.vscode/**
+.vscode-test/**
+.vscode-test-web/**
+*.vsix
+
+# Git
+.git/**
+.gitignore
+.github/**
+
+# Node
+node_modules/**
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build
+*.tsbuildinfo
+coverage/**
+.nyc_output/**
+
+# Documentation (keep README, LICENSE, CHANGELOG)
+docs/**
+SETUP.md
+TESTING.md
+INSTALL_NOTES.md
+MCP_SETUP.md
+QUICKSTART.md
+claude_desktop_config_example.json
+
+# IDE
+.idea/**
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Linting
+.eslintrc.json
+.prettierrc.json
+.prettierignore
+
+# Scripts
+install-mcp-servers.sh
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Backup files
+*.bak
+src/db/database.better-sqlite3.ts.bak
+
+# MCP server (not needed for VS Code extension)
+mcp-server/**
+
+# Claude config (development only)
+.claude.json
+CLAUDE.md

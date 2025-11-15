@@ -1,9 +1,9 @@
 {
   "name": "betterprompt",
   "displayName": "BetterPrompt",
-  "description": "Craft better prompts for AI coding assistants through intelligent analysis and enhancement",
-  "version": "0.1.0",
-  "publisher": "betterprompt",
+  "description": "AI-powered prompt enhancement for GitHub Copilot - analyze and improve vague prompts automatically",
+  "version": "1.0.0",
+  "publisher": "karlseryani",
   "engines": {
     "vscode": "^1.85.0"
   },
@@ -14,9 +14,12 @@
   "keywords": [
     "ai",
     "prompt",
+    "copilot",
+    "github-copilot",
+    "prompt-engineering",
+    "chat",
     "optimization",
-    "claude",
-    "chat"
+    "assistant"
   ],
   "activationEvents": [
     "onStartupFinished"
@@ -180,8 +183,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/BetterPrompt.git"
+    "url": "https://github.com/Karl-Seryani/BetterPrompt.git"
   },
+  "bugs": {
+    "url": "https://github.com/Karl-Seryani/BetterPrompt/issues"
+  },
+  "homepage": "https://github.com/Karl-Seryani/BetterPrompt#readme",
   "license": "MIT",
-  "icon": "icon.png"
+  "galleryBanner": {
+    "color": "#1e1e1e",
+    "theme": "dark"
+  }
 }
