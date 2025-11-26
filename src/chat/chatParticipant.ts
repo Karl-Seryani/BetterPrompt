@@ -64,9 +64,7 @@ export function registerChatParticipant(context: vscode.ExtensionContext): void 
         // Handle errors
         if (result.error) {
           stream.markdown(`❌ **Error:** ${result.error}\n\n`);
-          stream.markdown(
-            'Please configure a Groq API key in settings or install GitHub Copilot/Claude Code extension.'
-          );
+          stream.markdown('Please make sure GitHub Copilot is installed and active.');
           return;
         }
 
@@ -115,7 +113,7 @@ export function registerChatParticipant(context: vscode.ExtensionContext): void 
             const models = await vscode.lm.selectChatModels();
             if (models.length === 0) {
               stream.markdown('❌ **Error:** No language model available.\n\n');
-              stream.markdown('Please install GitHub Copilot or Claude Code extension.');
+              stream.markdown('No language model available. Please install GitHub Copilot Chat.');
               return;
             }
 

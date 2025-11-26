@@ -1,10 +1,6 @@
 /**
  * Unit tests for MCP Server - Functional Coverage
- * Since the MCP server immediately executes main() on import, we test the core
- * functions that the MCP tools use. The promptEngine.test.ts already covers
- * analyzePrompt and enhancePrompt extensively (14 tests).
- *
- * This file documents the MCP server structure and tests integration scenarios.
+ * Tests the core functions that the MCP tools use.
  */
 
 import { analyzePrompt, enhancePrompt } from '../src/promptEngine.js';
@@ -50,7 +46,7 @@ describe('MCP Server Tool Functions', () => {
 
   describe('enhance_prompt tool (via enhancePrompt)', () => {
     it('should return JSON-serializable enhancement results', async () => {
-      const result = await enhancePrompt('make a login', 'developer');
+      const result = await enhancePrompt('make a login');
 
       // MCP tool returns JSON.stringify(result, null, 2)
       const json = JSON.stringify(result, null, 2);
@@ -63,24 +59,15 @@ describe('MCP Server Tool Functions', () => {
       expect(parsed).toHaveProperty('analysis');
     });
 
-    it('should support all userLevel options (auto, beginner, developer)', async () => {
-      const autoResult = await enhancePrompt('make a login', 'auto');
-      const beginnerResult = await enhancePrompt('make a login', 'beginner');
-      const developerResult = await enhancePrompt('make a login', 'developer');
+    it('should enhance vague prompts', async () => {
+      const result = await enhancePrompt('make a login');
 
-      expect(autoResult.enhanced).toBeDefined();
-      expect(beginnerResult.enhanced).toBeDefined();
-      expect(developerResult.enhanced).toBeDefined();
-
-      // Developer mode should include TDD
-      expect(developerResult.enhanced.toLowerCase()).toContain('tdd');
-
-      // Beginner mode should include step-by-step
-      expect(beginnerResult.enhanced.toLowerCase()).toContain('step');
+      expect(result.enhanced).toBeDefined();
+      expect(result.enhanced).not.toBe(result.original);
     });
 
     it('should allow conditional analysis inclusion (showAnalysis param)', async () => {
-      const result = await enhancePrompt('make a login', 'developer');
+      const result = await enhancePrompt('make a login');
 
       // MCP tool conditionally includes analysis based on showAnalysis param
       const responseWithAnalysis = {
@@ -133,19 +120,8 @@ describe('MCP Server Tool Functions', () => {
       }).toThrow('Invalid prompt');
     });
 
-    it('should default userLevel to "auto" when not provided', async () => {
-      // MCP tool: const { prompt, userLevel = 'auto', showAnalysis = false } = args
-      const userLevel = undefined;
-      const effectiveUserLevel = userLevel || 'auto';
-
-      expect(effectiveUserLevel).toBe('auto');
-
-      const result = await enhancePrompt('make a login', effectiveUserLevel as any);
-      expect(result).toBeDefined();
-    });
-
     it('should default showAnalysis to false when not provided', () => {
-      // MCP tool: const { prompt, userLevel = 'auto', showAnalysis = false } = args
+      // MCP tool: const { prompt, showAnalysis = false } = args
       const showAnalysis = undefined;
       const effectiveShowAnalysis = showAnalysis ?? false;
 
@@ -200,10 +176,10 @@ describe('MCP Server Tool Functions', () => {
     });
 
     it('should define server name and version', () => {
-      // Documents: new Server({ name: 'betterprompt', version: '0.1.0' }, ...)
-      const serverConfig = { name: 'betterprompt', version: '0.1.0' };
+      // Documents: new Server({ name: 'betterprompt', version: '1.3.0' }, ...)
+      const serverConfig = { name: 'betterprompt', version: '1.3.0' };
       expect(serverConfig.name).toBe('betterprompt');
-      expect(serverConfig.version).toBe('0.1.0');
+      expect(serverConfig.version).toBe('1.3.0');
     });
 
     it('should register tool capability', () => {

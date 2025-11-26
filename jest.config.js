@@ -6,11 +6,18 @@ module.exports = {
   moduleNameMapper: {
     '^vscode$': '<rootDir>/tests/__mocks__/vscode.ts',
   },
-  collectCoverageFrom: [
-    'src/**/*.ts',
-    '!src/**/*.d.ts',
-    '!src/**/index.ts',
-  ],
+  transform: {
+    '^.+\\.tsx?$': [
+      'ts-jest',
+      {
+        tsconfig: {
+          sourceMap: true,
+          inlineSourceMap: true,
+        },
+      },
+    ],
+  },
+  collectCoverageFrom: ['src/**/*.ts', '!src/**/*.d.ts', '!src/**/index.ts'],
   coverageThreshold: {
     global: {
       branches: 80,
@@ -24,12 +31,4 @@ module.exports = {
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
   verbose: true,
   testTimeout: 10000,
-  globals: {
-    'ts-jest': {
-      tsconfig: {
-        sourceMap: true,
-        inlineSourceMap: true,
-      },
-    },
-  },
 };

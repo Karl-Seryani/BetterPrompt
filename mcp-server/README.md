@@ -4,7 +4,7 @@ MCP (Model Context Protocol) server for BetterPrompt - provides intelligent prom
 
 ## Overview
 
-This MCP server exposes BetterPrompt's prompt analysis and enhancement capabilities to AI assistants like Claude Code, enabling automatic prompt optimization behind the scenes.
+This MCP server exposes BetterPrompt's prompt analysis and enhancement capabilities to AI assistants, enabling automatic prompt optimization.
 
 ## Tools Provided
 
@@ -31,7 +31,6 @@ Enhances a vague prompt to be more specific and actionable.
 
 **Input:**
 - `prompt` (string): The vague prompt to enhance
-- `userLevel` (optional): "auto" | "beginner" | "developer" (default: "auto")
 - `showAnalysis` (optional): boolean (default: false)
 
 **Output:**
@@ -45,40 +44,23 @@ Enhances a vague prompt to be more specific and actionable.
 ```json
 {
   "prompt": "make a login",
-  "userLevel": "developer",
   "showAnalysis": true
 }
 ```
 
 ## Installation
 
-Already configured in your `.claude.json` for the BetterPrompt project!
+Add to your MCP configuration:
 
-## Usage with Claude Code
-
-The MCP server is automatically loaded when you start Claude Code in the BetterPrompt directory.
-
-### Method 1: Let Claude Use It Automatically
-Just chat normally - Claude will automatically use `enhance_prompt` when it detects a vague prompt:
-
-```
-You: make a website to sell clothes
-Claude: [Automatically calls enhance_prompt tool behind the scenes]
-        [Uses enhanced prompt to generate better code]
-```
-
-### Method 2: Explicitly Request Analysis
-```
-You: Analyze this prompt: "fix the bug"
-Claude: [Uses analyze_prompt tool]
-        Shows vagueness score and suggestions
-```
-
-### Method 3: Request Enhancement
-```
-You: Enhance this prompt for a developer: "build an app"
-Claude: [Uses enhance_prompt tool with userLevel="developer"]
-        Returns enhanced version
+```json
+{
+  "mcpServers": {
+    "betterprompt": {
+      "command": "node",
+      "args": ["/path/to/betterprompt/mcp-server/dist/index.js"]
+    }
+  }
+}
 ```
 
 ## Development
@@ -89,31 +71,26 @@ cd mcp-server
 npm install
 npm run build
 
-# Test the server with MCP Inspector
+# Run tests
+npm test
+
+# Test with MCP Inspector
 npx @modelcontextprotocol/inspector node dist/index.js
 ```
 
 ## Architecture
 
 - **index.ts**: Main MCP server implementation
-- **promptEngine.ts**: Prompt analysis and enhancement logic
+- **promptEngine.ts**: Prompt analysis and enhancement logic (imports from shared core)
 - Uses `@modelcontextprotocol/sdk` for MCP protocol handling
 - Communicates via stdio for fast, reliable transport
 
 ## How It Works
 
-1. Claude Code loads the MCP server on startup
-2. The server registers two tools: `analyze_prompt` and `enhance_prompt`
-3. When you chat with Claude, it can automatically call these tools
-4. Enhanced prompts are used to generate better responses
-5. All happens transparently - you just get better results!
-
-## Benefits
-
-- **Zero friction**: No need to manually optimize prompts
-- **Automatic**: Claude detects and fixes vague prompts behind the scenes
-- **Smart**: Adapts to your experience level (beginner/developer)
-- **Fast**: Local execution, no API calls needed for analysis
+1. AI assistant loads the MCP server
+2. Server registers two tools: `analyze_prompt` and `enhance_prompt`
+3. When chatting, the AI can call these tools to improve prompts
+4. Enhanced prompts lead to better AI responses
 
 ## License
 

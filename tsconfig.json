@@ -4,7 +4,7 @@
     "target": "ES2022",
     "lib": ["ES2022"],
     "outDir": "dist",
-    "rootDir": "src",
+    "rootDir": ".",
     "sourceMap": true,
     "strict": true,
     "noImplicitAny": true,
@@ -27,12 +27,14 @@
     "inlineSources": true
   },
   "include": [
-    "src/**/*"
+    "src/**/*",
+    "core/**/*"
   ],
   "exclude": [
     "node_modules",
     "dist",
     "tests",
+    "mcp-server",
     "**/*.spec.ts",
     "**/*.test.ts"
   ]

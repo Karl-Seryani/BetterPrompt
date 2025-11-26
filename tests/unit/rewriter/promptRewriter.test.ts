@@ -1,6 +1,28 @@
 import { PromptRewriter, RewriteOptions } from '../../../src/rewriter/promptRewriter';
 import { IssueType } from '../../../src/analyzer/promptAnalyzer';
 
+// Mock context detector
+jest.mock('../../../src/context/contextDetector', () => {
+  return {
+    detectContext: jest.fn().mockReturnValue({
+      currentFile: {
+        path: '/project/src/App.tsx',
+        name: 'App.tsx',
+        language: 'typescriptreact',
+        relativePath: 'src/App.tsx',
+      },
+      techStack: {
+        languages: ['TypeScript'],
+        frameworks: ['React'],
+        hasTypeScript: true,
+        hasTests: true,
+        packageManager: 'npm',
+      },
+    }),
+    formatContextForPrompt: jest.fn().mockReturnValue('Currently editing: src/App.tsx (typescriptreact)\nTech stack: React\nUsing TypeScript'),
+  };
+});
+
 // Mock VS Code LM - return false so tests use Groq
 jest.mock('../../../src/rewriter/vscodeLmRewriter', () => {
   return {
@@ -139,6 +161,33 @@ describe('PromptRewriter', () => {
       const result = await rewriter.processPrompt(longPrompt);
 
       expect(result.analysis).toBeDefined();
+    });
+  });
+
+  describe('context awareness', () => {
+    it('should include context in result when enabled', async () => {
+      const rewriter = new PromptRewriter({ ...mockOptions, includeContext: true });
+      const result = await rewriter.processPrompt('make a website');
+
+      // Context should be included in result
+      expect(result.context).toBeDefined();
+      expect(result.context?.techStack).toBeDefined();
+    });
+
+    it('should not include context when disabled', async () => {
+      const rewriter = new PromptRewriter({ ...mockOptions, includeContext: false });
+      const result = await rewriter.processPrompt('make a website');
+
+      // Context should be undefined when disabled
+      expect(result.context).toBeUndefined();
+    });
+
+    it('should include context by default', async () => {
+      const rewriter = new PromptRewriter(mockOptions);
+      const result = await rewriter.processPrompt('make a website');
+
+      // Context should be included by default
+      expect(result.context).toBeDefined();
     });
   });
 });

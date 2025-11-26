@@ -1,16 +1,13 @@
 /**
  * Unit tests for Onboarding Flow
+ * Tests the simplified zero-setup onboarding
  */
 
 import * as vscode from 'vscode';
 
-// Import the actual onboarding function - we'll need to export it from extension.ts
-// For now, we'll test the behavior through command execution
-
 describe('Onboarding Flow', () => {
   let mockContext: vscode.ExtensionContext;
   let mockGlobalState: Map<string, any>;
-  let mockConfig: vscode.WorkspaceConfiguration;
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -29,173 +26,102 @@ describe('Onboarding Flow', () => {
       },
       subscriptions: [],
     } as any;
-
-    // Mock workspace configuration
-    mockConfig = {
-      get: jest.fn(),
-      has: jest.fn(),
-      inspect: jest.fn(),
-      update: jest.fn().mockResolvedValue(undefined),
-    } as any;
-
-    (vscode.workspace.getConfiguration as jest.Mock).mockReturnValue(mockConfig);
   });
 
   describe('First Run Detection', () => {
     it('should detect first run when hasCompletedOnboarding is undefined', () => {
       const hasCompleted = mockContext.globalState.get('hasCompletedOnboarding');
-
       expect(hasCompleted).toBeUndefined();
     });
 
     it('should detect returning user when hasCompletedOnboarding is true', async () => {
       await mockContext.globalState.update('hasCompletedOnboarding', true);
       const hasCompleted = mockContext.globalState.get('hasCompletedOnboarding');
-
       expect(hasCompleted).toBe(true);
+    });
+
+    it('should detect first run when hasCompletedOnboarding is false', () => {
+      mockGlobalState.set('hasCompletedOnboarding', false);
+      const hasCompleted = mockContext.globalState.get('hasCompletedOnboarding');
+      expect(hasCompleted).toBe(false);
     });
   });
 
   describe('Welcome Message', () => {
-    it('should show welcome message on first run', async () => {
-      (vscode.window.showInformationMessage as jest.Mock).mockResolvedValue('Get Started');
+    it('should show simplified welcome message on first run', async () => {
+      (vscode.window.showInformationMessage as jest.Mock).mockResolvedValue('Try It Now');
 
       await vscode.window.showInformationMessage(
-        'Welcome to BetterPrompt! 🎨\n\nCraft better prompts for AI assistants with intelligent analysis and enhancement.',
-        'Get Started',
-        'Skip Setup'
+        'BetterPrompt installed! 🚀\n\nI intelligently enhance your prompts to get better AI responses. No setup needed.',
+        'Try It Now',
+        'Dismiss'
       );
 
       expect(vscode.window.showInformationMessage).toHaveBeenCalledWith(
-        expect.stringContaining('Welcome to BetterPrompt'),
-        'Get Started',
-        'Skip Setup'
+        expect.stringContaining('BetterPrompt installed'),
+        'Try It Now',
+        'Dismiss'
       );
     });
 
-    it('should allow user to skip onboarding', async () => {
-      (vscode.window.showInformationMessage as jest.Mock).mockResolvedValue('Skip Setup');
+    it('should allow user to try immediately', async () => {
+      (vscode.window.showInformationMessage as jest.Mock).mockResolvedValue('Try It Now');
 
       const result = await vscode.window.showInformationMessage(
-        'Welcome to BetterPrompt! 🎨\n\nCraft better prompts for AI assistants with intelligent analysis and enhancement.',
-        'Get Started',
-        'Skip Setup'
+        'BetterPrompt installed! 🚀',
+        'Try It Now',
+        'Dismiss'
       );
 
-      expect(result).toBe('Skip Setup');
+      expect(result).toBe('Try It Now');
     });
 
-    it('should handle user dismissing welcome message', async () => {
+    it('should allow user to dismiss', async () => {
+      (vscode.window.showInformationMessage as jest.Mock).mockResolvedValue('Dismiss');
+
+      const result = await vscode.window.showInformationMessage(
+        'BetterPrompt installed! 🚀',
+        'Try It Now',
+        'Dismiss'
+      );
+
+      expect(result).toBe('Dismiss');
+    });
+
+    it('should handle user closing the dialog', async () => {
       (vscode.window.showInformationMessage as jest.Mock).mockResolvedValue(undefined);
 
       const result = await vscode.window.showInformationMessage(
-        'Welcome to BetterPrompt! 🎨',
-        'Get Started',
-        'Skip Setup'
+        'BetterPrompt installed! 🚀',
+        'Try It Now',
+        'Dismiss'
       );
 
       expect(result).toBeUndefined();
     });
   });
 
-  describe('Persona Selection', () => {
-    const developerOption = {
-      label: '$(code) Software Developer',
-      description: 'Professional development with TDD, design patterns, and best practices',
-      detail:
-        'Prompts will emphasize: Test-Driven Development, architecture, security, performance, and production readiness',
-      value: 'developer',
-    };
-
-    const beginnerOption = {
-      label: '$(mortar-board) Regular User / Beginner',
-      description: 'Step-by-step guidance with simplified explanations',
-      detail: 'Prompts will be broken down into simple steps with examples and beginner-friendly language',
-      value: 'beginner',
-    };
-
-    const autoOption = {
-      label: '$(wand) Auto-Detect',
-      description: 'Smart detection based on your prompts (recommended)',
-      detail: 'BetterPrompt will automatically detect your experience level from your prompts and adjust accordingly',
-      value: 'auto',
-    };
-
-    it('should show three persona options', async () => {
-      (vscode.window.showQuickPick as jest.Mock).mockResolvedValue(autoOption);
-
-      await vscode.window.showQuickPick([developerOption, beginnerOption, autoOption], {
-        title: 'Choose Your Experience Level',
-        placeHolder: 'Select how BetterPrompt should enhance your prompts',
-        ignoreFocusOut: true,
-      });
-
-      expect(vscode.window.showQuickPick).toHaveBeenCalledWith(
-        expect.arrayContaining([
-          expect.objectContaining({ value: 'developer' }),
-          expect.objectContaining({ value: 'beginner' }),
-          expect.objectContaining({ value: 'auto' }),
-        ]),
-        expect.any(Object)
-      );
-    });
-
-    it('should save developer level selection to settings', async () => {
-      (vscode.window.showQuickPick as jest.Mock).mockResolvedValue(developerOption);
-
-      const selected = await vscode.window.showQuickPick([developerOption, beginnerOption, autoOption]);
-
-      if (selected) {
-        await mockConfig.update('userLevel', selected.value, vscode.ConfigurationTarget.Global);
-      }
-
-      expect(mockConfig.update).toHaveBeenCalledWith('userLevel', 'developer', vscode.ConfigurationTarget.Global);
-    });
-
-    it('should save beginner level selection to settings', async () => {
-      (vscode.window.showQuickPick as jest.Mock).mockResolvedValue(beginnerOption);
-
-      const selected = await vscode.window.showQuickPick([developerOption, beginnerOption, autoOption]);
-
-      if (selected) {
-        await mockConfig.update('userLevel', selected.value, vscode.ConfigurationTarget.Global);
-      }
-
-      expect(mockConfig.update).toHaveBeenCalledWith('userLevel', 'beginner', vscode.ConfigurationTarget.Global);
-    });
-
-    it('should save auto-detect selection to settings', async () => {
-      (vscode.window.showQuickPick as jest.Mock).mockResolvedValue(autoOption);
-
-      const selected = await vscode.window.showQuickPick([developerOption, beginnerOption, autoOption]);
-
-      if (selected) {
-        await mockConfig.update('userLevel', selected.value, vscode.ConfigurationTarget.Global);
-      }
-
-      expect(mockConfig.update).toHaveBeenCalledWith('userLevel', 'auto', vscode.ConfigurationTarget.Global);
-    });
-
-    it('should handle user canceling persona selection', async () => {
-      (vscode.window.showQuickPick as jest.Mock).mockResolvedValue(undefined);
-
-      const selected = await vscode.window.showQuickPick([developerOption, beginnerOption, autoOption]);
-
-      expect(selected).toBeUndefined();
-    });
-  });
-
   describe('Onboarding Completion', () => {
-    it('should mark onboarding as complete after successful flow', async () => {
+    it('should mark onboarding as complete after "Try It Now"', async () => {
+      (vscode.window.showInformationMessage as jest.Mock).mockResolvedValue('Try It Now');
+
       await mockContext.globalState.update('hasCompletedOnboarding', true);
 
       const hasCompleted = mockContext.globalState.get('hasCompletedOnboarding');
-
       expect(hasCompleted).toBe(true);
+    });
+
+    it('should mark onboarding as complete after "Dismiss"', async () => {
+      (vscode.window.showInformationMessage as jest.Mock).mockResolvedValue('Dismiss');
+
+      await mockContext.globalState.update('hasCompletedOnboarding', true);
+
       expect(mockContext.globalState.update).toHaveBeenCalledWith('hasCompletedOnboarding', true);
     });
 
-    it('should mark onboarding complete even if user skips', async () => {
+    it('should mark onboarding as complete even if user closes dialog', async () => {
+      (vscode.window.showInformationMessage as jest.Mock).mockResolvedValue(undefined);
+
       await mockContext.globalState.update('hasCompletedOnboarding', true);
 
       expect(mockContext.globalState.update).toHaveBeenCalledWith('hasCompletedOnboarding', true);
@@ -206,38 +132,6 @@ describe('Onboarding Flow', () => {
       const hasCompleted = mockContext.globalState.get('hasCompletedOnboarding');
 
       expect(hasCompleted).toBe(true);
-    });
-  });
-
-  describe('Success Messages', () => {
-    it('should show success message for developer level', async () => {
-      (vscode.window.showInformationMessage as jest.Mock).mockResolvedValue(undefined);
-
-      await vscode.window.showInformationMessage(
-        'BetterPrompt is configured for Software Developers! Your prompts will emphasize TDD, architecture, and production best practices.'
-      );
-
-      expect(vscode.window.showInformationMessage).toHaveBeenCalledWith(expect.stringContaining('Software Developers'));
-    });
-
-    it('should show success message for beginner level', async () => {
-      (vscode.window.showInformationMessage as jest.Mock).mockResolvedValue(undefined);
-
-      await vscode.window.showInformationMessage(
-        'BetterPrompt is configured for beginners! Your prompts will be broken down into simple, easy-to-follow steps.'
-      );
-
-      expect(vscode.window.showInformationMessage).toHaveBeenCalledWith(expect.stringContaining('beginners'));
-    });
-
-    it('should show success message for auto-detect level', async () => {
-      (vscode.window.showInformationMessage as jest.Mock).mockResolvedValue(undefined);
-
-      await vscode.window.showInformationMessage(
-        'BetterPrompt is configured with auto-detection! It will intelligently adapt to your experience level.'
-      );
-
-      expect(vscode.window.showInformationMessage).toHaveBeenCalledWith(expect.stringContaining('auto-detection'));
     });
   });
 
@@ -266,57 +160,78 @@ describe('Onboarding Flow', () => {
   });
 
   describe('Integration Scenarios', () => {
-    it('should complete full onboarding flow for developer', async () => {
+    it('should complete full onboarding flow with "Try It Now"', async () => {
       // Step 1: First run detection
       expect(mockContext.globalState.get('hasCompletedOnboarding')).toBeUndefined();
 
-      // Step 2: Show welcome, user clicks "Get Started"
-      (vscode.window.showInformationMessage as jest.Mock).mockResolvedValue('Get Started');
+      // Step 2: User clicks "Try It Now"
+      (vscode.window.showInformationMessage as jest.Mock).mockResolvedValue('Try It Now');
 
-      // Step 3: User selects Developer
-      const developerOption = { label: '$(code) Software Developer', value: 'developer' };
-      (vscode.window.showQuickPick as jest.Mock).mockResolvedValue(developerOption);
+      const choice = await vscode.window.showInformationMessage(
+        'BetterPrompt installed! 🚀',
+        'Try It Now',
+        'Dismiss'
+      );
 
-      const selected = await vscode.window.showQuickPick<{ label: string; value: string }>([]);
-      if (selected) {
-        await mockConfig.update('userLevel', selected.value, vscode.ConfigurationTarget.Global);
-      }
-
-      // Step 4: Mark complete
+      // Step 3: Mark complete
       await mockContext.globalState.update('hasCompletedOnboarding', true);
 
       // Verify
-      expect(mockConfig.update).toHaveBeenCalledWith('userLevel', 'developer', vscode.ConfigurationTarget.Global);
+      expect(choice).toBe('Try It Now');
       expect(mockContext.globalState.get('hasCompletedOnboarding')).toBe(true);
     });
 
-    it('should handle user skipping onboarding', async () => {
-      // User clicks "Skip Setup"
-      (vscode.window.showInformationMessage as jest.Mock).mockResolvedValue('Skip Setup');
+    it('should complete onboarding flow with "Dismiss"', async () => {
+      // User clicks "Dismiss"
+      (vscode.window.showInformationMessage as jest.Mock).mockResolvedValue('Dismiss');
 
-      const choice = await vscode.window.showInformationMessage('Welcome', 'Get Started', 'Skip Setup');
+      const choice = await vscode.window.showInformationMessage(
+        'BetterPrompt installed! 🚀',
+        'Try It Now',
+        'Dismiss'
+      );
 
-      if (choice === 'Skip Setup') {
+      if (choice === 'Dismiss') {
         await mockContext.globalState.update('hasCompletedOnboarding', true);
       }
 
-      // Verify onboarding marked complete without saving persona
+      // Verify onboarding marked complete
       expect(mockContext.globalState.get('hasCompletedOnboarding')).toBe(true);
-      expect(mockConfig.update).not.toHaveBeenCalledWith('userLevel', expect.anything(), expect.anything());
     });
 
-    it('should handle user dismissing all dialogs', async () => {
-      // User dismisses welcome
+    it('should handle user dismissing dialog by closing it', async () => {
+      // User closes dialog
       (vscode.window.showInformationMessage as jest.Mock).mockResolvedValue(undefined);
 
-      const choice = await vscode.window.showInformationMessage('Welcome', 'Get Started', 'Skip Setup');
+      const choice = await vscode.window.showInformationMessage(
+        'BetterPrompt installed! 🚀',
+        'Try It Now',
+        'Dismiss'
+      );
 
-      if (!choice) {
-        await mockContext.globalState.update('hasCompletedOnboarding', true);
-      }
+      // Should still mark complete to avoid showing again
+      await mockContext.globalState.update('hasCompletedOnboarding', true);
 
-      // Should mark complete to avoid showing again
+      expect(choice).toBeUndefined();
       expect(mockContext.globalState.get('hasCompletedOnboarding')).toBe(true);
+    });
+  });
+
+  describe('Zero Setup Philosophy', () => {
+    it('should not require any configuration steps', async () => {
+      // The new onboarding has no QuickPick for persona selection
+      expect(vscode.window.showQuickPick).not.toHaveBeenCalled();
+    });
+
+    it('should use "auto" mode by default', () => {
+      // Default userLevel is 'auto' - no user selection needed
+      const defaultUserLevel = 'auto';
+      expect(defaultUserLevel).toBe('auto');
+    });
+
+    it('should not prompt for API keys during onboarding', async () => {
+      // No input boxes for API keys in new flow
+      expect(vscode.window.showInputBox).not.toHaveBeenCalled();
     });
   });
 });

@@ -12,17 +12,16 @@ import {
   ListToolsRequestSchema,
   Tool,
 } from '@modelcontextprotocol/sdk/types.js';
-import { z } from 'zod';
 
-// Import analyzer logic (we'll copy it here for now)
-import { analyzePrompt, enhancePrompt } from './promptEngine.js';
+// Import analyzer logic from shared prompt engine
+import { analyzePrompt, enhancePrompt, type VaguenessIssue } from './promptEngine.js';
 
 // Define tools
 const TOOLS: Tool[] = [
   {
     name: 'analyze_prompt',
     description:
-      'Analyzes a prompt for vagueness, missing context, and unclear scope. Returns a vagueness score (0-100, higher = more vague) and detected issues. Use this before enhancing a prompt to understand what needs improvement.',
+      'Analyzes a prompt for vagueness, missing context, and unclear scope. Returns a vagueness score (0-100, higher = more vague) and detected issues.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -37,20 +36,13 @@ const TOOLS: Tool[] = [
   {
     name: 'enhance_prompt',
     description:
-      'Enhances a vague prompt to be more specific, clear, and actionable. Automatically detects user experience level (beginner/developer/auto) and tailors the enhancement accordingly. Returns both the original and enhanced versions with confidence score.',
+      'Enhances a vague prompt to be more specific, clear, and actionable. Returns both the original and enhanced versions with confidence score.',
     inputSchema: {
       type: 'object',
       properties: {
         prompt: {
           type: 'string',
           description: 'The vague prompt to enhance',
-        },
-        userLevel: {
-          type: 'string',
-          enum: ['auto', 'beginner', 'developer'],
-          description:
-            'User experience level: auto (smart detection), beginner (step-by-step), developer (TDD + best practices)',
-          default: 'auto',
         },
         showAnalysis: {
           type: 'boolean',
@@ -66,8 +58,8 @@ const TOOLS: Tool[] = [
 // Create MCP server instance
 const server = new Server(
   {
-    name: 'promptcraft',
-    version: '0.1.0',
+    name: 'betterprompt',
+    version: '1.3.0',
   },
   {
     capabilities: {
@@ -123,9 +115,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       }
 
       case 'enhance_prompt': {
-        const { prompt, userLevel = 'auto', showAnalysis = false } = args as {
+        const { prompt, showAnalysis = false } = args as {
           prompt: string;
-          userLevel?: 'auto' | 'beginner' | 'developer';
           showAnalysis?: boolean;
         };
 
@@ -133,7 +124,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           throw new Error('Invalid prompt: must be a non-empty string');
         }
 
-        const result = await enhancePrompt(prompt, userLevel);
+        const result = await enhancePrompt(prompt);
 
         const response: Record<string, unknown> = {
           original: result.original,
@@ -145,7 +136,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         if (showAnalysis) {
           response.analysis = {
             score: result.analysis.score,
-            issues: result.analysis.issues.map((issue) => ({
+            issues: result.analysis.issues.map((issue: VaguenessIssue) => ({
               type: issue.type,
               description: issue.description,
             })),
@@ -182,7 +173,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  console.error('PromptCraft MCP server running on stdio');
+  console.error('BetterPrompt MCP server running on stdio');
 }
 
 main().catch((error) => {

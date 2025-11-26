@@ -65,7 +65,7 @@ describe('VS Code Language Model Rewriter', () => {
         const rewriter = new VsCodeLmRewriter({ userLevel: 'auto' });
 
         await expect(rewriter.enhancePrompt('make a login')).rejects.toThrow(
-          'No language models available. Please enable Copilot or Claude Code.'
+          'No language models available. Make sure GitHub Copilot is installed and active.'
         );
       });
 
@@ -153,8 +153,8 @@ describe('VS Code Language Model Rewriter', () => {
       });
     });
 
-    describe('persona system', () => {
-      it('should use developer prompt for developer level', async () => {
+    describe('intelligent prompt system', () => {
+      it('should detect intent categories in prompt', async () => {
         const mockModel = createMockModel();
         (vscode.lm.selectChatModels as jest.Mock).mockResolvedValue([mockModel]);
 
@@ -162,12 +162,13 @@ describe('VS Code Language Model Rewriter', () => {
         await rewriter.enhancePrompt('make a login');
 
         const systemMessage = mockModel.sendRequest.mock.calls[0][0][0].content;
-        expect(systemMessage).toContain('TDD');
-        expect(systemMessage).toContain('SOLID');
-        expect(systemMessage).toContain('production');
+        // System prompt should have intent detection
+        expect(systemMessage).toContain('BUILD');
+        expect(systemMessage).toContain('LEARN');
+        expect(systemMessage).toContain('FIX');
       });
 
-      it('should use beginner prompt for beginner level', async () => {
+      it('should use same intelligent prompt regardless of userLevel', async () => {
         const mockModel = createMockModel();
         (vscode.lm.selectChatModels as jest.Mock).mockResolvedValue([mockModel]);
 
@@ -175,12 +176,12 @@ describe('VS Code Language Model Rewriter', () => {
         await rewriter.enhancePrompt('make a login');
 
         const systemMessage = mockModel.sendRequest.mock.calls[0][0][0].content;
-        expect(systemMessage).toContain('step-by-step');
-        expect(systemMessage).toContain('simple');
-        expect(systemMessage).toContain('beginner');
+        // All modes now use the same intelligent prompt with intent detection
+        expect(systemMessage).toContain('detect the user');
+        expect(systemMessage).toContain('INTENT');
       });
 
-      it('should use auto-detect prompt for auto level', async () => {
+      it('should include scope awareness', async () => {
         const mockModel = createMockModel();
         (vscode.lm.selectChatModels as jest.Mock).mockResolvedValue([mockModel]);
 
@@ -188,11 +189,11 @@ describe('VS Code Language Model Rewriter', () => {
         await rewriter.enhancePrompt('make a login');
 
         const systemMessage = mockModel.sendRequest.mock.calls[0][0][0].content;
-        expect(systemMessage).toContain('Detect the user');
-        expect(systemMessage).toContain('experience level');
+        expect(systemMessage).toContain('Small task');
+        expect(systemMessage).toContain('Large task');
       });
 
-      it('should default to auto level when not specified', async () => {
+      it('should use intelligent prompt by default', async () => {
         const mockModel = createMockModel();
         (vscode.lm.selectChatModels as jest.Mock).mockResolvedValue([mockModel]);
 
@@ -200,7 +201,7 @@ describe('VS Code Language Model Rewriter', () => {
         await rewriter.enhancePrompt('test prompt');
 
         const systemMessage = mockModel.sendRequest.mock.calls[0][0][0].content;
-        expect(systemMessage).toContain('Detect the user');
+        expect(systemMessage).toContain('prompt enhancement');
       });
     });
 

@@ -8,11 +8,11 @@ describe('DatabaseManager', () => {
   let db: DatabaseManager;
   let tempDir: string;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     // Create a temporary directory for test database
     tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'promptforge-test-'));
     db = new DatabaseManager(tempDir);
-    db.initialize();
+    await db.initialize();
   });
 
   afterEach(() => {
@@ -24,8 +24,20 @@ describe('DatabaseManager', () => {
   });
 
   describe('initialization', () => {
-    it('should create database file', () => {
-      const dbPath = path.join(tempDir, 'promptforge.db');
+    it('should create database file after saving data', () => {
+      // sql.js is in-memory by default - file is created only when data is saved
+      const dbPath = path.join(tempDir, 'betterprompt.db');
+      
+      // File may not exist yet (sql.js is in-memory until save)
+      // Insert data to trigger save
+      db.insertTemplate({
+        name: 'Test',
+        content: 'Content',
+        created_at: Date.now(),
+        updated_at: Date.now(),
+      });
+      
+      // Now file should exist
       expect(fs.existsSync(dbPath)).toBe(true);
     });
 
@@ -35,9 +47,9 @@ describe('DatabaseManager', () => {
       expect(db).toBeDefined();
     });
 
-    it('should not reinitialize if already initialized', () => {
+    it('should not reinitialize if already initialized', async () => {
       // Initialize again
-      db.initialize();
+      await db.initialize();
       // Should not throw error
       expect(db).toBeDefined();
     });

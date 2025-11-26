@@ -4,7 +4,7 @@ import initSqlJs, { Database as SqlJsDatabase } from 'sql.js';
 import { DATABASE_SCHEMA, UserTemplate, PromptHistory, AnalyticsEntry } from './schema';
 
 /**
- * Database manager class for PromptForge using sql.js
+ * Database manager class for BetterPrompt using sql.js
  * sql.js is a pure JavaScript implementation that doesn't require native compilation
  */
 export class DatabaseManager {
@@ -13,7 +13,7 @@ export class DatabaseManager {
   private initialized = false;
 
   constructor(storagePath: string) {
-    this.dbPath = path.join(storagePath, 'promptforge.db');
+    this.dbPath = path.join(storagePath, 'betterprompt.db');
   }
 
   /**

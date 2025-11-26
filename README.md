@@ -1,92 +1,103 @@
 # BetterPrompt for GitHub Copilot
 
-**Turn vague prompts into detailed, actionable requests for GitHub Copilot Chat**
+**Supercharge your Copilot Chat with intelligent prompt enhancement**
 
-BetterPrompt analyzes your prompts for vagueness and automatically enhances them to get better responses from GitHub Copilot. Works seamlessly with `@workspace` chat in VS Code.
+Type `@betterprompt` in GitHub Copilot Chat to transform vague prompts into detailed, actionable requests that get better AI responses.
 
 ## ✨ Features
 
-- 🔍 **Instant Vagueness Detection** - Analyzes prompts in <100ms for unclear patterns
-- 🤖 **AI-Powered Enhancement** - Uses GitHub Copilot to automatically improve your prompts
-- 💬 **Chat Integration** - Use `@betterprompt` in GitHub Copilot Chat for inline enhancement
-- 📊 **Before/After Diff** - See exactly what changed and why
-- 🎯 **Persona-Based** - Auto-detects beginner vs developer level
-- 🚀 **Zero Config** - Works instantly with GitHub Copilot (no API keys needed)
+- 🧠 **Intelligent Enhancement** - Automatically understands your intent and adds the right details
+- 📁 **Context Aware** - Knows your current file, tech stack, and selected code
+- 💬 **Native Chat Integration** - Use `@betterprompt` directly in Copilot Chat
+- ⚡ **Instant Analysis** - Detects vagueness in <100ms
+- 🚀 **Zero Config** - Works immediately with your Copilot subscription
 
 ## 🎬 Quick Start
 
-### Method 1: Chat Participant (Recommended)
+### In Copilot Chat (Recommended)
 
-Use `@betterprompt` in GitHub Copilot Chat:
+Just type `@betterprompt` followed by your prompt:
 
 ```
-@betterprompt make a login system
+@betterprompt make a login page
 ```
 
-BetterPrompt will analyze and enhance your prompt, then show you the improved version.
+BetterPrompt analyzes and enhances your prompt, showing you the improved version.
 
-### Method 2: Command Palette
+### Chat Modes
 
-1. Open Command Palette (`Cmd+Shift+P` or `Ctrl+Shift+P`)
-2. Type "BetterPrompt: Optimize Current Prompt"
-3. Enter your prompt
-4. Review the enhanced version
-
-## 📖 Example
-
-**❌ Before (Vague):**
-```
-make a login page
-```
-
-**✅ After (Enhanced):**
-```
-Create a secure login page with the following requirements:
-
-Technical Implementation:
-- Frontend: React component with form validation
-- Authentication: JWT token-based authentication
-- Security: Password hashing (bcrypt), CSRF protection, rate limiting
-- Validation: Email format, password strength (min 8 chars, uppercase, number, special char)
-
-Features to Include:
-1. Email and password input fields
-2. "Remember me" checkbox (optional)
-3. "Forgot password?" link
-4. Error handling with user-friendly messages
-5. Loading state during authentication
-6. Redirect to dashboard on success
-
-Best Practices:
-- Use HTTPS only
-- Implement proper error messages (avoid revealing if email exists)
-- Add CAPTCHA after failed attempts
-- Follow WCAG accessibility guidelines
-- Responsive design for mobile/desktop
-
-Step-by-step approach:
-1. Create login form component with controlled inputs
-2. Add client-side validation
-3. Implement authentication API call
-4. Handle JWT token storage
-5. Set up protected route navigation
-6. Add error handling and loading states
-7. Write tests for authentication flow
-```
-
-## 🎯 Chat Modes
-
-### Review Mode (Default)
-Shows you the enhanced prompt before sending to Copilot:
+**Review Mode** (default) - Shows enhancement before sending:
 ```
 @betterprompt /review build an API
 ```
 
-### Auto Mode (Transparent)
-Automatically enhances and sends to Copilot:
+**Auto Mode** - Enhances and sends directly to Copilot:
 ```
 @betterprompt /auto build an API
 ```
+
+## 📖 Examples
+
+### Basic Enhancement
+
+**Your vague prompt:**
+```
+@betterprompt make a login page
+```
+
+**BetterPrompt enhances it to:**
+```
+Create a login page with:
+- Email and password input fields with client-side validation
+- Form submission that sends credentials to a /api/auth/login endpoint
+- Loading state while authenticating
+- Error messages for invalid credentials or network failures
+- Redirect to dashboard on successful login
+- "Forgot password" link
+- Responsive design that works on mobile and desktop
+```
+
+### Context-Aware Enhancement
+
+When you're editing `App.tsx` in a React project:
+
+**Your prompt:**
+```
+@betterprompt add a loading state
+```
+
+**BetterPrompt sees your context and enhances:**
+```
+Add a loading state to this React component (App.tsx):
+- Add an `isLoading` prop (boolean)
+- Show a spinner or 'Loading...' text when loading
+- Disable interactions during loading to prevent double-clicks
+- Maintain the component's width to prevent layout shift
+
+Should the loading state be managed internally or passed as a prop?
+```
+
+**It knew you were in React without you having to say it!**
+
+## 🧠 How It Works
+
+### Intent Detection
+BetterPrompt detects what you're trying to do:
+
+| Intent | Trigger Words | Response Style |
+|--------|---------------|----------------|
+| **BUILD** | make, create, build | Actionable requirements, phased for big projects |
+| **LEARN** | explain, teach, how | Teacher mode with examples |
+| **FIX** | fix, debug, error | Diagnostic, asks for error details |
+| **IMPROVE** | refactor, optimize | Professional, specific improvements |
+| **CONFIGURE** | setup, install, deploy | Step-by-step instructions |
+
+### Context Awareness
+Automatically detects and includes:
+- Current file you're editing
+- Tech stack (React, Next.js, Vue, Express, etc.)
+- Selected code in your editor
+- TypeScript/linter errors in your file
 
 ## ⚙️ Configuration
 
@@ -95,73 +106,53 @@ Open Settings (`Cmd+,`) and search for "BetterPrompt":
 | Setting | Description | Default |
 |---------|-------------|---------|
 | `betterprompt.enabled` | Enable/disable extension | `true` |
-| `betterprompt.userLevel` | Your experience level (auto/beginner/developer) | `auto` |
-| `betterprompt.vaguenessThreshold` | Min score to trigger rewrite (0-100) | `30` |
-| `betterprompt.preferredModel` | Preferred AI model | `auto` (uses Copilot) |
-| `betterprompt.chatMode` | Default chat behavior (review/auto) | `review` |
-| `betterprompt.showDiff` | Show before/after diff view | `true` |
-
-## 📋 Requirements
-
-- **VS Code 1.85.0 or higher**
-- **GitHub Copilot** subscription (for AI enhancement)
-- *Optional:* Groq API key (free alternative if Copilot unavailable)
+| `betterprompt.vaguenessThreshold` | Min vagueness score (0-100) | `30` |
+| `betterprompt.chatMode` | Default chat mode (review/auto) | `review` |
+| `betterprompt.showDiff` | Show before/after diff | `true` |
+| `betterprompt.groqApiKey` | Groq API key (free fallback) | - |
 
 ## 🔧 Commands
 
-| Command | Description |
-|---------|-------------|
-| `BetterPrompt: Optimize Current Prompt` | Manually optimize a prompt |
-| `BetterPrompt: Open Settings` | Quick access to settings |
-| `BetterPrompt: Reset Onboarding` | Reset first-run setup (testing) |
+| Command | Shortcut | Description |
+|---------|----------|-------------|
+| `BetterPrompt: Optimize Current Prompt` | `Cmd+Shift+E` | Enhance a prompt manually |
+| `BetterPrompt: Open Settings` | - | Quick access to settings |
 
-## 🎓 How It Works
+## 📋 Requirements
 
-1. **Analysis** - Scans prompt for vague verbs, missing context, unclear scope
-2. **Scoring** - Assigns vagueness score (0-100, higher = more vague)
-3. **Enhancement** - Uses GitHub Copilot to rewrite with:
-   - Specific technical requirements
-   - Security best practices
-   - Step-by-step implementation plan
-   - Error handling considerations
-4. **Review** - Shows diff and lets you approve/copy/dismiss
+- **VS Code 1.85.0+**
+- **GitHub Copilot** subscription
+- **GitHub Copilot Chat** extension
 
-## 🔐 Privacy
+## 🆓 Free Fallback: Groq
 
-- **Client-side analysis** - Vagueness detection runs locally (<100ms)
-- **No telemetry** - Zero tracking or analytics
-- **Your choice** - Enhancement only happens when you trigger it
-- **Transparent** - See exactly what changes before accepting
+If you hit your Copilot quota, BetterPrompt can use Groq (free):
+
+1. Get a free API key at [console.groq.com](https://console.groq.com)
+2. Add it to settings: `betterprompt.groqApiKey`
+3. BetterPrompt will automatically use it when Copilot isn't available
 
 ## 🐛 Troubleshooting
 
-### "No language model available" error
-Make sure GitHub Copilot extension is installed and active.
+### "@betterprompt" not appearing in chat?
+Make sure GitHub Copilot Chat extension is installed and you're signed in.
 
-### Enhancement not working
-1. Check GitHub Copilot is enabled
-2. Try setting a Groq API key as fallback (free at [console.groq.com](https://console.groq.com))
-3. Verify `betterprompt.enabled` is `true` in settings
+### Enhancement not working?
+1. Check Copilot is active (look for Copilot icon in status bar)
+2. Try reloading VS Code
+3. Verify your Copilot subscription is active
+4. If quota exhausted, add a Groq API key (free)
 
-### Prompts not being enhanced
-Increase `betterprompt.vaguenessThreshold` in settings (try `20` instead of `30`)
+## 🔐 Privacy
+
+- **Local analysis** - Vagueness detection runs on your machine
+- **No telemetry** - Zero tracking
+- **Uses Copilot** - Enhancement uses your existing Copilot subscription (or Groq)
 
 ## 📝 License
 
-MIT License - See [LICENSE](LICENSE) for details
-
-## 🤝 Contributing
-
-Issues and pull requests welcome at [GitHub](https://github.com/Karl-Seryani/BetterPrompt)
-
-## 💡 Tips for Best Results
-
-1. **Start vague, let BetterPrompt enhance** - Type naturally, we'll add the details
-2. **Use chat mode** - `@betterprompt` is faster than command palette
-3. **Review enhancements** - Learn what makes a good prompt
-4. **Adjust threshold** - Lower it if you want more suggestions
-5. **Set your level** - Manual "developer" mode gives TDD/architecture focus
+MIT License
 
 ---
 
-**Made with ❤️ for better AI interactions**
+**Made with ❤️ for better Copilot interactions**

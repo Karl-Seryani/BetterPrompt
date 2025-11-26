@@ -1,5 +1,5 @@
 /**
- * Unit tests for Prompt Engine (TDD - Written FIRST)
+ * Unit tests for Prompt Engine
  */
 
 import { analyzePrompt, enhancePrompt, IssueType, IssueSeverity } from '../src/promptEngine.js';
@@ -19,7 +19,7 @@ describe('Prompt Engine', () => {
       const result = analyzePrompt('make a login');
 
       expect(result.hasVagueVerb).toBe(true);
-      expect(result.issues.some(i => i.type === IssueType.VAGUE_VERB)).toBe(true);
+      expect(result.issues.some((i) => i.type === IssueType.VAGUE_VERB)).toBe(true);
       expect(result.score).toBeGreaterThanOrEqual(30);
     });
 
@@ -27,14 +27,14 @@ describe('Prompt Engine', () => {
       const result = analyzePrompt('update it');
 
       expect(result.hasMissingContext).toBe(true);
-      expect(result.issues.some(i => i.type === IssueType.MISSING_CONTEXT)).toBe(true);
+      expect(result.issues.some((i) => i.type === IssueType.MISSING_CONTEXT)).toBe(true);
     });
 
     it('should detect unclear scope', () => {
       const result = analyzePrompt('build an app');
 
       expect(result.hasUnclearScope).toBe(true);
-      expect(result.issues.some(i => i.type === IssueType.UNCLEAR_SCOPE)).toBe(true);
+      expect(result.issues.some((i) => i.type === IssueType.UNCLEAR_SCOPE)).toBe(true);
     });
 
     it('should NOT flag prompts with technical context', () => {
@@ -63,49 +63,50 @@ describe('Prompt Engine', () => {
 
   describe('enhancePrompt', () => {
     it('should return enhanced prompt with original', async () => {
-      const result = await enhancePrompt('make a login', 'auto');
+      const result = await enhancePrompt('make a login');
 
       expect(result.original).toBe('make a login');
       expect(result.enhanced).toBeTruthy();
       expect(result.enhanced).not.toBe(result.original);
     });
 
-    it('should include analysis when requested', async () => {
-      const result = await enhancePrompt('make a login', 'auto');
+    it('should include analysis in result', async () => {
+      const result = await enhancePrompt('make a login');
 
       expect(result.analysis).toBeDefined();
       expect(result.analysis.score).toBeGreaterThan(0);
     });
 
     it('should have confidence score', async () => {
-      const result = await enhancePrompt('fix bug', 'auto');
+      const result = await enhancePrompt('fix bug');
 
       expect(result.confidence).toBeGreaterThanOrEqual(0);
       expect(result.confidence).toBeLessThanOrEqual(1);
     });
 
     it('should specify model used', async () => {
-      const result = await enhancePrompt('update it', 'developer');
+      const result = await enhancePrompt('update it');
 
       expect(result.model).toBeTruthy();
       expect(typeof result.model).toBe('string');
+      expect(result.model).toBe('rule-based');
     });
 
-    it('should tailor enhancement for developer level', async () => {
-      const result = await enhancePrompt('make a login', 'developer');
+    it('should add requirements for vague prompts', async () => {
+      const result = await enhancePrompt('make a login');
 
-      expect(result.enhanced.toLowerCase()).toContain('tdd');
+      expect(result.enhanced.toLowerCase()).toContain('requirement');
     });
 
-    it('should tailor enhancement for beginner level', async () => {
-      const result = await enhancePrompt('make a login', 'beginner');
+    it('should add context for missing context', async () => {
+      const result = await enhancePrompt('update it');
 
-      expect(result.enhanced.toLowerCase()).toContain('step');
+      expect(result.enhanced.toLowerCase()).toContain('technology');
     });
 
     it('should not excessively enhance already good prompts', async () => {
       const goodPrompt = 'Implement secure JWT authentication using bcrypt';
-      const result = await enhancePrompt(goodPrompt, 'auto');
+      const result = await enhancePrompt(goodPrompt);
 
       expect(result.confidence).toBeLessThan(0.6);
     });
