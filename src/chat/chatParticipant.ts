@@ -8,7 +8,6 @@ import { PromptRewriter, RewriteOptions } from '../rewriter/promptRewriter';
 
 export interface ChatParticipantConfig {
   groqApiKey?: string;
-  userLevel: 'auto' | 'beginner' | 'developer';
   preferredModel: 'auto' | 'gpt-4' | 'claude' | 'groq';
   vaguenessThreshold: number;
   chatMode: 'review' | 'auto';
@@ -27,7 +26,6 @@ export function registerChatParticipant(context: vscode.ExtensionContext): void 
         const config = vscode.workspace.getConfiguration('betterprompt');
         const chatConfig: ChatParticipantConfig = {
           groqApiKey: config.get<string>('groqApiKey', ''),
-          userLevel: config.get<string>('userLevel', 'auto') as 'auto' | 'beginner' | 'developer',
           preferredModel: config.get<string>('preferredModel', 'auto') as 'auto' | 'gpt-4' | 'claude' | 'groq',
           vaguenessThreshold: config.get<number>('vaguenessThreshold', 30),
           chatMode: config.get<string>('chatMode', 'review') as 'review' | 'auto',
@@ -52,7 +50,6 @@ export function registerChatParticipant(context: vscode.ExtensionContext): void 
         const rewriterOptions: RewriteOptions = {
           groqApiKey: chatConfig.groqApiKey,
           threshold: chatConfig.vaguenessThreshold,
-          userLevel: chatConfig.userLevel,
           preferredModel: chatConfig.preferredModel,
         };
 

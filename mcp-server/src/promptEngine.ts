@@ -28,30 +28,53 @@ export interface EnhancementResult {
 
 /**
  * Enhances a vague prompt using rule-based improvements
- * Note: This is a simplified version for the MCP server
- * For full AI enhancement, the VS Code extension uses Groq/Copilot
+ * Produces actual enhanced prompts, not meta-descriptions
  */
 export async function enhancePrompt(prompt: string): Promise<EnhancementResult> {
   const analysis = analyzePrompt(prompt);
 
-  // Rule-based enhancement based on detected issues
-  const enhancements: string[] = [];
+  // If prompt is already specific enough, return as-is
+  if (analysis.score < 30) {
+    return {
+      original: prompt,
+      enhanced: prompt,
+      confidence: 0.9,
+      model: 'rule-based',
+      analysis,
+    };
+  }
+
+  // Build an actually enhanced prompt
+  const parts: string[] = [];
+  const trimmed = prompt.trim();
+
+  // Add the base request
+  parts.push(trimmed);
+
+  // Add specific questions based on issues
+  const questions: string[] = [];
 
   if (analysis.hasVagueVerb) {
-    enhancements.push('with specific requirements and acceptance criteria');
+    questions.push('What are the specific requirements?');
+    questions.push('What should the end result look like?');
   }
 
   if (analysis.hasMissingContext) {
-    enhancements.push('specifying the technology stack and environment');
+    questions.push('What technology/framework should be used?');
+    questions.push('What file or component should this be in?');
   }
 
   if (analysis.hasUnclearScope) {
-    enhancements.push('defining clear boundaries and success criteria');
+    questions.push('What features should be included?');
+    questions.push('What are the constraints or limitations?');
   }
 
-  let enhanced = prompt;
-  if (enhancements.length > 0) {
-    enhanced = `${prompt} - ${enhancements.join(', ')}`;
+  // Format as a proper prompt with follow-up questions
+  let enhanced: string;
+  if (questions.length > 0) {
+    enhanced = `${trimmed}\n\nPlease clarify:\n${questions.map((q) => `- ${q}`).join('\n')}`;
+  } else {
+    enhanced = trimmed;
   }
 
   return {

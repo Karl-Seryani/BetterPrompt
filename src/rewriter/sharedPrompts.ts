@@ -3,14 +3,11 @@
  * Detects intent and adapts response style accordingly
  */
 
-// Keep for backward compatibility
-export type UserLevel = 'auto' | 'beginner' | 'developer';
-
 /**
  * Builds the intelligent system prompt
  * Adapts to different intents: build, learn, fix, improve
  */
-export function buildSystemPrompt(_userLevel: UserLevel = 'auto'): string {
+export function buildSystemPrompt(): string {
   return `You are a prompt enhancement assistant. Your job is to make prompts clearer and more effective.
 
 CONTEXT AWARENESS:

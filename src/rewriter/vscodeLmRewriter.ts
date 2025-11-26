@@ -4,13 +4,10 @@
  */
 
 import * as vscode from 'vscode';
-import { buildSystemPrompt, buildUserPrompt, calculateConfidence, UserLevel } from './sharedPrompts';
-import { RewriteResult } from './types';
-
-export type { RewriteResult };
+import { buildSystemPrompt, buildUserPrompt, calculateConfidence } from './sharedPrompts';
+import type { RewriteResult } from './types';
 
 export interface VsCodeLmConfig {
-  userLevel?: UserLevel;
   preferredModel?: 'auto' | 'gpt-4' | 'claude' | 'groq';
 }
 
@@ -57,7 +54,7 @@ export class VsCodeLmRewriter {
     // Select model based on user preference
     const model = this.selectModel(models);
 
-    const systemPrompt = buildSystemPrompt(this.config.userLevel || 'auto');
+    const systemPrompt = buildSystemPrompt();
     const userPrompt = buildUserPrompt(vaguePrompt, context);
 
     try {

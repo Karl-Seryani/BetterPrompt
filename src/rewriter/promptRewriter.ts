@@ -4,15 +4,14 @@
  * Implements fallback: VS Code LM → Groq → Error
  */
 
-import { analyzePrompt, AnalysisResult } from '../analyzer/promptAnalyzer';
-import { GroqRewriter, RewriteResult, UserLevel } from './groqRewriter';
+import { analyzePrompt, AnalysisResult } from '../../core/analyzer';
+import { GroqRewriter, RewriteResult } from './groqRewriter';
 import { VsCodeLmRewriter, isVsCodeLmAvailable } from './vscodeLmRewriter';
 import { detectContext, formatContextForPrompt, WorkspaceContext } from '../context/contextDetector';
 
 export interface RewriteOptions {
   groqApiKey?: string; // Optional - fallback if VS Code LM not available
   threshold?: number; // Minimum vagueness score to trigger rewriting (default: 30)
-  userLevel?: UserLevel; // User level (auto-detection recommended)
   preferredModel?: 'auto' | 'gpt-4' | 'claude' | 'groq'; // Preferred AI model
   includeContext?: boolean; // Include workspace context (default: true)
 }
@@ -34,27 +33,24 @@ export class PromptRewriter {
   private groqRewriter?: GroqRewriter;
   private vscodeLmRewriter: VsCodeLmRewriter;
   private threshold: number;
-  private userLevel: UserLevel;
   private preferredModel: 'auto' | 'gpt-4' | 'claude' | 'groq';
   private includeContext: boolean;
 
   constructor(options: RewriteOptions) {
-    this.userLevel = options.userLevel || 'auto';
     this.threshold = options.threshold ?? 30;
     this.preferredModel = options.preferredModel || 'auto';
     this.includeContext = options.includeContext ?? true;
 
     // Initialize VS Code LM rewriter (always available)
     this.vscodeLmRewriter = new VsCodeLmRewriter({
-      userLevel: this.userLevel,
       preferredModel: this.preferredModel,
     });
 
     // Initialize Groq rewriter as fallback (if API key provided)
-    if (options.groqApiKey) {
+    const trimmedKey = options.groqApiKey?.trim();
+    if (trimmedKey) {
       this.groqRewriter = new GroqRewriter({
-        apiKey: options.groqApiKey,
-        userLevel: this.userLevel,
+        apiKey: trimmedKey,
       });
     }
   }

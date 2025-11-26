@@ -121,14 +121,19 @@ export function analyzePrompt(prompt: string): AnalysisResult {
     });
   }
 
-  // Check 1b: Learning/explanation verbs (weight: 35 points)
-  // Learning requests are inherently vague - you don't know what you don't know
+  // Check 1b: Learning/explanation verbs
+  // Only penalize if the learning request ALSO lacks context
+  // "Explain the error on line 42 of auth.ts" is specific and shouldn't be penalized
   const hasLearningVerb = LEARNING_VERBS.some((verb) => {
     const regex = new RegExp(`\\b${verb}\\b`, 'i');
     return regex.test(trimmed);
   });
 
-  if (hasLearningVerb) {
+  // Only flag learning verbs if they lack context patterns
+  const hasContext = CONTEXT_PATTERNS.some((pattern) => pattern.test(trimmed));
+  const learningVerbNeedsHelp = hasLearningVerb && !hasContext && words.length < LENGTH_THRESHOLDS.CONTEXT_NEEDED;
+
+  if (learningVerbNeedsHelp) {
     issues.push({
       type: IssueType.UNCLEAR_SCOPE,
       severity: IssueSeverity.MEDIUM,
@@ -138,7 +143,7 @@ export function analyzePrompt(prompt: string): AnalysisResult {
   }
 
   // Check 2: Missing context (weight: 35 points)
-  const hasContext = CONTEXT_PATTERNS.some((pattern) => pattern.test(trimmed));
+  // Note: hasContext was already computed above for learning verb check
   const hasMissingContext = !hasContext && words.length < LENGTH_THRESHOLDS.CONTEXT_NEEDED;
 
   if (hasMissingContext) {
@@ -169,8 +174,8 @@ export function analyzePrompt(prompt: string): AnalysisResult {
     });
   }
 
-  // hasUnclearScope is true if either learning verb OR broad scope detected
-  const hasUnclearScope = hasLearningVerb || hasBroadScope;
+  // hasUnclearScope is true if either learning verb needs help OR broad scope detected
+  const hasUnclearScope = learningVerbNeedsHelp || hasBroadScope;
 
   // Calculate score (0-100)
   let score = 0;
@@ -179,7 +184,7 @@ export function analyzePrompt(prompt: string): AnalysisResult {
     score += SCORE_WEIGHTS.VAGUE_VERB;
   }
 
-  if (hasLearningVerb) {
+  if (learningVerbNeedsHelp) {
     score += SCORE_WEIGHTS.LEARNING_VERB;
   }
 

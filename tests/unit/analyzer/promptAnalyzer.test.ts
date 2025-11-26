@@ -1,4 +1,4 @@
-import { analyzePrompt, IssueType, IssueSeverity } from '../../../src/analyzer/promptAnalyzer';
+import { analyzePrompt, IssueType, IssueSeverity } from '../../../core/analyzer';
 
 describe('PromptAnalyzer', () => {
   describe('analyzePrompt', () => {

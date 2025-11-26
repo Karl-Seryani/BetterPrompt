@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { registerChatParticipant } from '../../../src/chat/chatParticipant';
-import { analyzePrompt } from '../../../src/analyzer/promptAnalyzer';
+import { analyzePrompt } from '../../../core/analyzer';
 import { PromptRewriter } from '../../../src/rewriter/promptRewriter';
 
 // Mock VS Code API
@@ -23,7 +23,7 @@ jest.mock('vscode', () => ({
 }));
 
 // Mock analyzer
-jest.mock('../../../src/analyzer/promptAnalyzer');
+jest.mock('../../../core/analyzer');
 
 // Mock rewriter
 jest.mock('../../../src/rewriter/promptRewriter');
@@ -68,7 +68,6 @@ describe('Chat Participant', () => {
       get: jest.fn((key: string, defaultValue?: any) => {
         const configs: Record<string, any> = {
           enabled: true,
-          userLevel: 'auto',
           preferredModel: 'auto',
           chatMode: 'review',
           vaguenessThreshold: 30,
@@ -460,26 +459,6 @@ describe('Chat Participant', () => {
         }),
       };
       (PromptRewriter as jest.Mock).mockReturnValue(mockRewriterInstance);
-    });
-
-    it('should read userLevel from config', async () => {
-      mockConfig.get.mockImplementation((key: string) => {
-        if (key === 'userLevel') return 'developer';
-        return undefined;
-      });
-
-      const mockRequest = {
-        prompt: 'make a login',
-        command: 'review',
-      } as vscode.ChatRequest;
-
-      await chatHandler(mockRequest, {} as any, mockStream, mockToken);
-
-      expect(PromptRewriter).toHaveBeenCalledWith(
-        expect.objectContaining({
-          userLevel: 'developer',
-        })
-      );
     });
 
     it('should read preferredModel from config', async () => {

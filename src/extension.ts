@@ -82,12 +82,10 @@ async function handleOptimizePrompt(context: vscode.ExtensionContext): Promise<v
       try {
         // Initialize rewriter
         const threshold = config.get<number>('vaguenessThreshold', 30);
-        const userLevel = config.get<string>('userLevel', 'auto') as 'auto' | 'beginner' | 'developer';
         const preferredModel = config.get<string>('preferredModel', 'auto') as 'auto' | 'gpt-4' | 'claude' | 'groq';
         const rewriter = new PromptRewriter({
           groqApiKey,
           threshold,
-          userLevel,
           preferredModel,
         });
 

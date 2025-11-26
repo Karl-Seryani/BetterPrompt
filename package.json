@@ -78,17 +78,6 @@
           "default": "",
           "description": "Groq API key for AI-powered prompt rewriting (get free key at console.groq.com)"
         },
-        "betterprompt.userLevel": {
-          "type": "string",
-          "enum": [
-            "auto"
-          ],
-          "default": "auto",
-          "enumDescriptions": [
-            "Intelligent auto-detection based on your prompt and context"
-          ],
-          "description": "Prompt enhancement mode (auto-detection recommended)"
-        },
         "betterprompt.vaguenessThreshold": {
           "type": "number",
           "default": 30,

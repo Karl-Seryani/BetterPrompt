@@ -1,5 +1,5 @@
 import { PromptRewriter, RewriteOptions } from '../../../src/rewriter/promptRewriter';
-import { IssueType } from '../../../src/analyzer/promptAnalyzer';
+import { IssueType } from '../../../core/analyzer';
 
 // Mock context detector
 jest.mock('../../../src/context/contextDetector', () => {

@@ -54,7 +54,7 @@ describe('VS Code Language Model Rewriter', () => {
 
     describe('enhancePrompt', () => {
       it('should throw error for empty prompt', async () => {
-        const rewriter = new VsCodeLmRewriter({ userLevel: 'auto' });
+        const rewriter = new VsCodeLmRewriter({});
 
         await expect(rewriter.enhancePrompt('')).rejects.toThrow('Prompt cannot be empty');
         await expect(rewriter.enhancePrompt('   ')).rejects.toThrow('Prompt cannot be empty');
@@ -62,7 +62,7 @@ describe('VS Code Language Model Rewriter', () => {
 
       it('should throw error when no models are available', async () => {
         (vscode.lm.selectChatModels as jest.Mock).mockResolvedValue([]);
-        const rewriter = new VsCodeLmRewriter({ userLevel: 'auto' });
+        const rewriter = new VsCodeLmRewriter({});
 
         await expect(rewriter.enhancePrompt('make a login')).rejects.toThrow(
           'No language models available. Make sure GitHub Copilot is installed and active.'
@@ -74,7 +74,7 @@ describe('VS Code Language Model Rewriter', () => {
         const gpt35Model = createMockModel('gpt-3.5-turbo', 'copilot');
         (vscode.lm.selectChatModels as jest.Mock).mockResolvedValue([gpt35Model, gpt4Model]);
 
-        const rewriter = new VsCodeLmRewriter({ userLevel: 'developer' });
+        const rewriter = new VsCodeLmRewriter({});
         const result = await rewriter.enhancePrompt('make a login');
 
         expect(result.model).toBe('copilot/gpt-4');
@@ -86,7 +86,7 @@ describe('VS Code Language Model Rewriter', () => {
         const gpt35Model = createMockModel('gpt-3.5-turbo', 'copilot');
         (vscode.lm.selectChatModels as jest.Mock).mockResolvedValue([gpt35Model, claudeModel]);
 
-        const rewriter = new VsCodeLmRewriter({ userLevel: 'developer' });
+        const rewriter = new VsCodeLmRewriter({});
         const result = await rewriter.enhancePrompt('make a login');
 
         expect(result.model).toBe('anthropic/claude-3');
@@ -97,7 +97,7 @@ describe('VS Code Language Model Rewriter', () => {
         const mockModel = createMockModel('unknown-model', 'unknown-vendor');
         (vscode.lm.selectChatModels as jest.Mock).mockResolvedValue([mockModel]);
 
-        const rewriter = new VsCodeLmRewriter({ userLevel: 'auto' });
+        const rewriter = new VsCodeLmRewriter({});
         const result = await rewriter.enhancePrompt('make a login');
 
         expect(result.model).toBe('unknown-vendor/unknown-model');
@@ -108,7 +108,7 @@ describe('VS Code Language Model Rewriter', () => {
         const mockModel = createMockModel();
         (vscode.lm.selectChatModels as jest.Mock).mockResolvedValue([mockModel]);
 
-        const rewriter = new VsCodeLmRewriter({ userLevel: 'developer' });
+        const rewriter = new VsCodeLmRewriter({});
         const result = await rewriter.enhancePrompt('make a login');
 
         expect(result).toMatchObject({
@@ -126,7 +126,7 @@ describe('VS Code Language Model Rewriter', () => {
         const mockModel = createMockModel();
         (vscode.lm.selectChatModels as jest.Mock).mockResolvedValue([mockModel]);
 
-        const rewriter = new VsCodeLmRewriter({ userLevel: 'developer' });
+        const rewriter = new VsCodeLmRewriter({});
         const result = await rewriter.enhancePrompt('make a login');
 
         expect(result.enhanced).toContain('TDD');
@@ -145,7 +145,7 @@ describe('VS Code Language Model Rewriter', () => {
         };
         (vscode.lm.selectChatModels as jest.Mock).mockResolvedValue([mockModel]);
 
-        const rewriter = new VsCodeLmRewriter({ userLevel: 'auto' });
+        const rewriter = new VsCodeLmRewriter({});
         const result = await rewriter.enhancePrompt('test prompt');
 
         expect(result.enhanced).toBe('Quoted enhanced prompt');
@@ -158,7 +158,7 @@ describe('VS Code Language Model Rewriter', () => {
         const mockModel = createMockModel();
         (vscode.lm.selectChatModels as jest.Mock).mockResolvedValue([mockModel]);
 
-        const rewriter = new VsCodeLmRewriter({ userLevel: 'developer' });
+        const rewriter = new VsCodeLmRewriter({});
         await rewriter.enhancePrompt('make a login');
 
         const systemMessage = mockModel.sendRequest.mock.calls[0][0][0].content;
@@ -168,15 +168,15 @@ describe('VS Code Language Model Rewriter', () => {
         expect(systemMessage).toContain('FIX');
       });
 
-      it('should use same intelligent prompt regardless of userLevel', async () => {
+      it('should use consistent intelligent prompt', async () => {
         const mockModel = createMockModel();
         (vscode.lm.selectChatModels as jest.Mock).mockResolvedValue([mockModel]);
 
-        const rewriter = new VsCodeLmRewriter({ userLevel: 'beginner' });
+        const rewriter = new VsCodeLmRewriter({});
         await rewriter.enhancePrompt('make a login');
 
         const systemMessage = mockModel.sendRequest.mock.calls[0][0][0].content;
-        // All modes now use the same intelligent prompt with intent detection
+        // All requests now use the same intelligent prompt with intent detection
         expect(systemMessage).toContain('detect the user');
         expect(systemMessage).toContain('INTENT');
       });
@@ -185,7 +185,7 @@ describe('VS Code Language Model Rewriter', () => {
         const mockModel = createMockModel();
         (vscode.lm.selectChatModels as jest.Mock).mockResolvedValue([mockModel]);
 
-        const rewriter = new VsCodeLmRewriter({ userLevel: 'auto' });
+        const rewriter = new VsCodeLmRewriter({});
         await rewriter.enhancePrompt('make a login');
 
         const systemMessage = mockModel.sendRequest.mock.calls[0][0][0].content;
@@ -213,7 +213,7 @@ describe('VS Code Language Model Rewriter', () => {
         };
         (vscode.lm.selectChatModels as jest.Mock).mockResolvedValue([mockModel]);
 
-        const rewriter = new VsCodeLmRewriter({ userLevel: 'auto' });
+        const rewriter = new VsCodeLmRewriter({});
 
         await expect(rewriter.enhancePrompt('test')).rejects.toThrow('Language model access denied');
       });
@@ -225,7 +225,7 @@ describe('VS Code Language Model Rewriter', () => {
         };
         (vscode.lm.selectChatModels as jest.Mock).mockResolvedValue([mockModel]);
 
-        const rewriter = new VsCodeLmRewriter({ userLevel: 'auto' });
+        const rewriter = new VsCodeLmRewriter({});
 
         await expect(rewriter.enhancePrompt('test')).rejects.toThrow('Request was blocked');
       });
@@ -237,7 +237,7 @@ describe('VS Code Language Model Rewriter', () => {
         };
         (vscode.lm.selectChatModels as jest.Mock).mockResolvedValue([mockModel]);
 
-        const rewriter = new VsCodeLmRewriter({ userLevel: 'auto' });
+        const rewriter = new VsCodeLmRewriter({});
 
         await expect(rewriter.enhancePrompt('test')).rejects.toThrow('VS Code Language Model error: Network error');
       });
@@ -255,7 +255,7 @@ describe('VS Code Language Model Rewriter', () => {
         };
         (vscode.lm.selectChatModels as jest.Mock).mockResolvedValue([mockModel]);
 
-        const rewriter = new VsCodeLmRewriter({ userLevel: 'developer' });
+        const rewriter = new VsCodeLmRewriter({});
         const result = await rewriter.enhancePrompt('make login');
 
         expect(result.confidence).toBeGreaterThan(0.5);
@@ -272,7 +272,7 @@ describe('VS Code Language Model Rewriter', () => {
         };
         (vscode.lm.selectChatModels as jest.Mock).mockResolvedValue([mockModel]);
 
-        const rewriter = new VsCodeLmRewriter({ userLevel: 'beginner' });
+        const rewriter = new VsCodeLmRewriter({});
         const result = await rewriter.enhancePrompt('make login');
 
         expect(result.confidence).toBeLessThan(0.8);

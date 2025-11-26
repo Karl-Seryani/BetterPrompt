@@ -3,18 +3,16 @@
  * Uses free Groq API with Llama 3.3 70B model
  */
 
-import { buildSystemPrompt, buildUserPrompt, calculateConfidence, UserLevel } from './sharedPrompts';
+import { buildSystemPrompt, buildUserPrompt, calculateConfidence } from './sharedPrompts';
 import { RewriteResult } from './types';
 
-// Re-export for backward compatibility
-export type { UserLevel, RewriteResult };
+export type { RewriteResult };
 
 export interface GroqConfig {
   apiKey: string;
   model?: string;
   maxTokens?: number;
   temperature?: number;
-  userLevel?: UserLevel;
 }
 
 const DEFAULT_MODEL = 'llama-3.3-70b-versatile';
@@ -51,7 +49,7 @@ export class GroqRewriter {
       throw new Error('Prompt cannot be empty');
     }
 
-    const systemPrompt = buildSystemPrompt(this.config.userLevel || 'auto');
+    const systemPrompt = buildSystemPrompt();
     const userPrompt = buildUserPrompt(vaguePrompt, context);
 
     try {

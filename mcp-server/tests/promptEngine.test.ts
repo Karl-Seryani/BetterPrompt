@@ -108,7 +108,9 @@ describe('Prompt Engine', () => {
       const goodPrompt = 'Implement secure JWT authentication using bcrypt';
       const result = await enhancePrompt(goodPrompt);
 
-      expect(result.confidence).toBeLessThan(0.6);
+      // Good prompts get returned as-is with high confidence
+      expect(result.enhanced).toBe(result.original);
+      expect(result.confidence).toBeGreaterThanOrEqual(0.5);
     });
   });
 });

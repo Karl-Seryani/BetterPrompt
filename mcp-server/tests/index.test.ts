@@ -169,11 +169,7 @@ describe('MCP Server Tool Functions', () => {
       expect(expectedTools).toHaveLength(2);
     });
 
-    it('should use stdio transport', () => {
-      // Documents: const transport = new StdioServerTransport()
-      // Cannot test directly as main() executes immediately
-      expect('stdio').toBe('stdio'); // Placeholder
-    });
+    // Note: stdio transport is used in main() which is tested via integration tests
 
     it('should define server name and version', () => {
       // Documents: new Server({ name: 'betterprompt', version: '1.3.0' }, ...)
