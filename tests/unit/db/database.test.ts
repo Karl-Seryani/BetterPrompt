@@ -10,7 +10,7 @@ describe('DatabaseManager', () => {
 
   beforeEach(async () => {
     // Create a temporary directory for test database
-    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'promptforge-test-'));
+    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'betterprompt-test-'));
     db = new DatabaseManager(tempDir);
     await db.initialize();
   });

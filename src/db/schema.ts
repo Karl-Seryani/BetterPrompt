@@ -1,5 +1,5 @@
 /**
- * Database schema definitions for PromptForge
+ * Database schema definitions for BetterPrompt
  * Uses SQLite for local storage
  */
 
