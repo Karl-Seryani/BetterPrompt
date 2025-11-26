@@ -5,18 +5,13 @@
 
 import * as vscode from 'vscode';
 import { buildSystemPrompt, buildUserPrompt, calculateConfidence, UserLevel } from './sharedPrompts';
+import { RewriteResult } from './types';
+
+export type { RewriteResult };
 
 export interface VsCodeLmConfig {
   userLevel?: UserLevel;
   preferredModel?: 'auto' | 'gpt-4' | 'claude' | 'groq';
-}
-
-export interface RewriteResult {
-  original: string;
-  enhanced: string;
-  model: string;
-  tokensUsed?: number;
-  confidence: number;
 }
 
 /**

@@ -4,9 +4,10 @@
  */
 
 import { buildSystemPrompt, buildUserPrompt, calculateConfidence, UserLevel } from './sharedPrompts';
+import { RewriteResult } from './types';
 
 // Re-export for backward compatibility
-export type { UserLevel };
+export type { UserLevel, RewriteResult };
 
 export interface GroqConfig {
   apiKey: string;
@@ -14,14 +15,6 @@ export interface GroqConfig {
   maxTokens?: number;
   temperature?: number;
   userLevel?: UserLevel;
-}
-
-export interface RewriteResult {
-  original: string;
-  enhanced: string;
-  model: string;
-  tokensUsed?: number;
-  confidence: number;
 }
 
 const DEFAULT_MODEL = 'llama-3.3-70b-versatile';
@@ -35,6 +28,10 @@ export class GroqRewriter {
   private config: GroqConfig;
 
   constructor(config: GroqConfig) {
+    if (!config.apiKey || config.apiKey.trim().length === 0) {
+      throw new Error('Groq API key is required. Get a free key at console.groq.com');
+    }
+
     this.config = {
       model: DEFAULT_MODEL,
       maxTokens: DEFAULT_MAX_TOKENS,

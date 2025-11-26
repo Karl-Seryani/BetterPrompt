@@ -4,6 +4,22 @@
  * Performance requirement: < 100ms for analysis
  */
 
+// Scoring weights for different issue types
+const SCORE_WEIGHTS = {
+  VAGUE_VERB: 30,
+  LEARNING_VERB: 25,
+  MISSING_CONTEXT: 35,
+  BROAD_SCOPE: 30,
+  VERY_SHORT_BONUS: 20,
+} as const;
+
+// Thresholds for prompt length analysis
+const LENGTH_THRESHOLDS = {
+  VERY_SHORT: 2, // Prompts with <= 2 words get extra penalty
+  SHORT: 5, // Prompts with < 5 words considered short
+  CONTEXT_NEEDED: 20, // Prompts with < 20 words need context patterns
+} as const;
+
 export enum IssueType {
   VAGUE_VERB = 'VAGUE_VERB',
   MISSING_CONTEXT = 'MISSING_CONTEXT',
@@ -21,10 +37,6 @@ export interface VaguenessIssue {
   severity: IssueSeverity;
   description: string;
   suggestion: string;
-  location?: {
-    start: number;
-    end: number;
-  };
 }
 
 export interface AnalysisResult {
@@ -127,7 +139,7 @@ export function analyzePrompt(prompt: string): AnalysisResult {
 
   // Check 2: Missing context (weight: 35 points)
   const hasContext = CONTEXT_PATTERNS.some((pattern) => pattern.test(trimmed));
-  const hasMissingContext = !hasContext && words.length < 20; // Short prompts without context
+  const hasMissingContext = !hasContext && words.length < LENGTH_THRESHOLDS.CONTEXT_NEEDED;
 
   if (hasMissingContext) {
     issues.push({
@@ -144,11 +156,11 @@ export function analyzePrompt(prompt: string): AnalysisResult {
     return regex.test(trimmed);
   });
 
-  const isVeryShort = words.length < 5;
+  const isVeryShort = words.length < LENGTH_THRESHOLDS.SHORT;
   const lacksRequirements = !trimmed.includes('?') && !hasSpecificDetails(trimmed);
-  const hasUnclearScope = hasBroadTerms && (isVeryShort || lacksRequirements);
+  const hasBroadScope = hasBroadTerms && (isVeryShort || lacksRequirements);
 
-  if (hasUnclearScope) {
+  if (hasBroadScope) {
     issues.push({
       type: IssueType.UNCLEAR_SCOPE,
       severity: IssueSeverity.MEDIUM,
@@ -157,28 +169,31 @@ export function analyzePrompt(prompt: string): AnalysisResult {
     });
   }
 
+  // hasUnclearScope is true if either learning verb OR broad scope detected
+  const hasUnclearScope = hasLearningVerb || hasBroadScope;
+
   // Calculate score (0-100)
   let score = 0;
 
   if (hasVagueVerb) {
-    score += 30;
+    score += SCORE_WEIGHTS.VAGUE_VERB;
   }
 
   if (hasLearningVerb) {
-    score += 35; // Learning requests should always trigger enhancement
+    score += SCORE_WEIGHTS.LEARNING_VERB;
   }
 
   if (hasMissingContext) {
-    score += 35;
+    score += SCORE_WEIGHTS.MISSING_CONTEXT;
   }
 
-  if (hasUnclearScope) {
-    score += 35;
+  if (hasBroadScope) {
+    score += SCORE_WEIGHTS.BROAD_SCOPE;
   }
 
   // Adjust for very short prompts
-  if (words.length <= 2) {
-    score = Math.min(100, score + 20);
+  if (words.length <= LENGTH_THRESHOLDS.VERY_SHORT) {
+    score = Math.min(100, score + SCORE_WEIGHTS.VERY_SHORT_BONUS);
   }
 
   // Cap at 100

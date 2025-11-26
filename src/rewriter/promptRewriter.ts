@@ -12,7 +12,6 @@ import { detectContext, formatContextForPrompt, WorkspaceContext } from '../cont
 export interface RewriteOptions {
   groqApiKey?: string; // Optional - fallback if VS Code LM not available
   threshold?: number; // Minimum vagueness score to trigger rewriting (default: 30)
-  autoAccept?: boolean; // Skip user approval (default: false)
   userLevel?: UserLevel; // User level (auto-detection recommended)
   preferredModel?: 'auto' | 'gpt-4' | 'claude' | 'groq'; // Preferred AI model
   includeContext?: boolean; // Include workspace context (default: true)
@@ -68,25 +67,24 @@ export class PromptRewriter {
    */
   public async processPrompt(prompt: string): Promise<RewriteWorkflowResult> {
     try {
-      // Step 1: Detect workspace context (if enabled)
-      let context: WorkspaceContext | undefined;
-      let contextString = '';
-      if (this.includeContext) {
-        context = detectContext();
-        contextString = formatContextForPrompt(context);
-      }
-
-      // Step 2: Analyze prompt for vagueness
+      // Step 1: Analyze prompt for vagueness FIRST (fast, no I/O)
       const analysis = analyzePrompt(prompt);
 
-      // Step 3: Check if rewrite is needed
+      // Step 2: Check if rewrite is needed BEFORE detecting context
       if (analysis.score < this.threshold) {
         return {
           shouldRewrite: false,
           analysis,
           skipped: true,
-          context,
         };
+      }
+
+      // Step 3: Only detect context if we're going to rewrite
+      let context: WorkspaceContext | undefined;
+      let contextString = '';
+      if (this.includeContext) {
+        context = detectContext();
+        contextString = formatContextForPrompt(context);
       }
 
       // Step 4: If user prefers Groq, skip VS Code LM
