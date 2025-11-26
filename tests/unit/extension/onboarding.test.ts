@@ -224,7 +224,7 @@ describe('Onboarding Flow', () => {
     });
 
     it('should use "auto" mode by default', () => {
-      // Default userLevel is 'auto' - no user selection needed
+      // System uses intelligent auto-detection - no user selection needed
       const defaultUserLevel = 'auto';
       expect(defaultUserLevel).toBe('auto');
     });

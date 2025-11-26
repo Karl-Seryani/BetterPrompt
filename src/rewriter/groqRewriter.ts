@@ -4,9 +4,7 @@
  */
 
 import { buildSystemPrompt, buildUserPrompt, calculateConfidence } from './sharedPrompts';
-import { RewriteResult } from './types';
-
-export type { RewriteResult };
+import type { RewriteResult } from './types';
 
 export interface GroqConfig {
   apiKey: string;

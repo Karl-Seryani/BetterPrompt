@@ -5,7 +5,8 @@
  */
 
 import { analyzePrompt, AnalysisResult } from '../../core/analyzer';
-import { GroqRewriter, RewriteResult } from './groqRewriter';
+import { GroqRewriter } from './groqRewriter';
+import type { RewriteResult } from './types';
 import { VsCodeLmRewriter, isVsCodeLmAvailable } from './vscodeLmRewriter';
 import { detectContext, formatContextForPrompt, WorkspaceContext } from '../context/contextDetector';
 
