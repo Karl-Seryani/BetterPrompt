@@ -3,7 +3,7 @@
   "displayName": "BetterPrompt",
   "description": "AI-powered prompt enhancement for GitHub Copilot - analyze and improve vague prompts automatically",
   "version": "1.3.0",
-  "publisher": "karlseryani",
+  "publisher": "karl-seryani",
   "engines": {
     "vscode": "^1.85.0"
   },
