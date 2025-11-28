@@ -5,6 +5,7 @@
 
 import { buildSystemPrompt, buildUserPrompt, calculateConfidence } from './sharedPrompts';
 import type { RewriteResult } from './types';
+import { formatUserError } from '../utils/errorHandler';
 
 export interface GroqConfig {
   apiKey: string;
@@ -62,7 +63,9 @@ export class GroqRewriter {
         confidence: calculateConfidence(vaguePrompt, enhanced),
       };
     } catch (error) {
-      throw new Error(`Groq API error: ${error instanceof Error ? error.message : String(error)}`);
+      // Use error handler to provide user-friendly message
+      const userMessage = formatUserError(error);
+      throw new Error(userMessage);
     }
   }
 

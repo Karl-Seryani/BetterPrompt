@@ -215,7 +215,8 @@ describe('VS Code Language Model Rewriter', () => {
 
         const rewriter = new VsCodeLmRewriter({});
 
-        await expect(rewriter.enhancePrompt('test')).rejects.toThrow('Language model access denied');
+        // Now uses error handler which categorizes as PERMISSION_DENIED
+        await expect(rewriter.enhancePrompt('test')).rejects.toThrow('Permission denied');
       });
 
       it('should handle blocked/policy errors gracefully', async () => {
@@ -227,7 +228,7 @@ describe('VS Code Language Model Rewriter', () => {
 
         const rewriter = new VsCodeLmRewriter({});
 
-        await expect(rewriter.enhancePrompt('test')).rejects.toThrow('Request was blocked');
+        await expect(rewriter.enhancePrompt('test')).rejects.toThrow('An error occurred');
       });
 
       it('should handle generic errors', async () => {
@@ -239,7 +240,7 @@ describe('VS Code Language Model Rewriter', () => {
 
         const rewriter = new VsCodeLmRewriter({});
 
-        await expect(rewriter.enhancePrompt('test')).rejects.toThrow('VS Code Language Model error: Network error');
+        await expect(rewriter.enhancePrompt('test')).rejects.toThrow('Network connection failed');
       });
     });
 

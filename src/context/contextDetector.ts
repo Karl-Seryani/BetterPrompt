@@ -5,7 +5,20 @@
 
 import * as vscode from 'vscode';
 import * as path from 'path';
-import * as fs from 'fs';
+import * as fs from 'fs/promises';
+import { getPackageJsonCache } from './packageJsonCache';
+
+/**
+ * Helper: Check if file exists (async)
+ */
+async function fileExists(filePath: string): Promise<boolean> {
+  try {
+    await fs.access(filePath);
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 export interface WorkspaceContext {
   // Current file info
@@ -39,7 +52,7 @@ export interface WorkspaceContext {
 /**
  * Detects the current workspace context
  */
-export function detectContext(): WorkspaceContext {
+export async function detectContext(): Promise<WorkspaceContext> {
   const editor = vscode.window.activeTextEditor;
   const workspaceFolders = vscode.workspace.workspaceFolders;
 
@@ -87,7 +100,7 @@ export function detectContext(): WorkspaceContext {
   // Detect tech stack from workspace
   if (workspaceFolders && workspaceFolders.length > 0) {
     const rootPath = workspaceFolders[0].uri.fsPath;
-    context.techStack = detectTechStack(rootPath);
+    context.techStack = await detectTechStack(rootPath);
   }
 
   return context;
@@ -101,7 +114,7 @@ interface PackageJson {
 /**
  * Detects the tech stack from project files
  */
-function detectTechStack(rootPath: string): WorkspaceContext['techStack'] {
+async function detectTechStack(rootPath: string): Promise<WorkspaceContext['techStack']> {
   const stack: WorkspaceContext['techStack'] = {
     languages: [],
     frameworks: [],
@@ -109,88 +122,88 @@ function detectTechStack(rootPath: string): WorkspaceContext['techStack'] {
     hasTests: false,
   };
 
-  // Check for package.json (Node.js/JavaScript)
+  // Check for package.json (Node.js/JavaScript) - using cache for performance
   const packageJsonPath = path.join(rootPath, 'package.json');
-  if (fs.existsSync(packageJsonPath)) {
-    try {
-      const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8')) as PackageJson;
-      const allDeps: Record<string, string> = {
-        ...packageJson.dependencies,
-        ...packageJson.devDependencies,
-      };
+  const cache = getPackageJsonCache();
+  const packageJson = (await cache.get(packageJsonPath)) as PackageJson | null;
 
-      // Detect package manager
-      if (fs.existsSync(path.join(rootPath, 'pnpm-lock.yaml'))) {
-        stack.packageManager = 'pnpm';
-      } else if (fs.existsSync(path.join(rootPath, 'yarn.lock'))) {
-        stack.packageManager = 'yarn';
-      } else if (fs.existsSync(path.join(rootPath, 'package-lock.json'))) {
-        stack.packageManager = 'npm';
-      }
+  if (packageJson) {
+    const allDeps: Record<string, string> = {
+      ...packageJson.dependencies,
+      ...packageJson.devDependencies,
+    };
 
-      // Detect TypeScript
-      if (allDeps['typescript'] || fs.existsSync(path.join(rootPath, 'tsconfig.json'))) {
-        stack.hasTypeScript = true;
-        stack.languages.push('TypeScript');
-      } else {
-        stack.languages.push('JavaScript');
-      }
+    // Detect package manager
+    if (await fileExists(path.join(rootPath, 'pnpm-lock.yaml'))) {
+      stack.packageManager = 'pnpm';
+    } else if (await fileExists(path.join(rootPath, 'yarn.lock'))) {
+      stack.packageManager = 'yarn';
+    } else if (await fileExists(path.join(rootPath, 'package-lock.json'))) {
+      stack.packageManager = 'npm';
+    }
 
-      // Detect frameworks
-      if (allDeps['next']) {
-        stack.frameworks.push('Next.js');
-      }
-      if (allDeps['react']) {
-        stack.frameworks.push('React');
-      }
-      if (allDeps['vue']) {
-        stack.frameworks.push('Vue');
-      }
-      if (allDeps['svelte']) {
-        stack.frameworks.push('Svelte');
-      }
-      if (allDeps['angular']) {
-        stack.frameworks.push('Angular');
-      }
-      if (allDeps['express']) {
-        stack.frameworks.push('Express');
-      }
-      if (allDeps['fastify']) {
-        stack.frameworks.push('Fastify');
-      }
-      if (allDeps['nestjs'] || allDeps['@nestjs/core']) {
-        stack.frameworks.push('NestJS');
-      }
-      if (allDeps['hono']) {
-        stack.frameworks.push('Hono');
-      }
-      if (allDeps['electron']) {
-        stack.frameworks.push('Electron');
-      }
-      if (allDeps['tailwindcss']) {
-        stack.frameworks.push('Tailwind CSS');
-      }
+    // Detect TypeScript
+    if (allDeps['typescript'] || (await fileExists(path.join(rootPath, 'tsconfig.json')))) {
+      stack.hasTypeScript = true;
+      stack.languages.push('TypeScript');
+    } else {
+      stack.languages.push('JavaScript');
+    }
 
-      // Detect testing
-      if (allDeps['jest'] || allDeps['vitest'] || allDeps['mocha'] || allDeps['cypress']) {
-        stack.hasTests = true;
-      }
-    } catch {
-      // Ignore JSON parse errors
+    // Detect frameworks
+    if (allDeps['next']) {
+      stack.frameworks.push('Next.js');
+    }
+    if (allDeps['react']) {
+      stack.frameworks.push('React');
+    }
+    if (allDeps['vue']) {
+      stack.frameworks.push('Vue');
+    }
+    if (allDeps['svelte']) {
+      stack.frameworks.push('Svelte');
+    }
+    if (allDeps['angular']) {
+      stack.frameworks.push('Angular');
+    }
+    if (allDeps['express']) {
+      stack.frameworks.push('Express');
+    }
+    if (allDeps['fastify']) {
+      stack.frameworks.push('Fastify');
+    }
+    if (allDeps['nestjs'] || allDeps['@nestjs/core']) {
+      stack.frameworks.push('NestJS');
+    }
+    if (allDeps['hono']) {
+      stack.frameworks.push('Hono');
+    }
+    if (allDeps['electron']) {
+      stack.frameworks.push('Electron');
+    }
+    if (allDeps['tailwindcss']) {
+      stack.frameworks.push('Tailwind CSS');
+    }
+
+    // Detect testing
+    if (allDeps['jest'] || allDeps['vitest'] || allDeps['mocha'] || allDeps['cypress']) {
+      stack.hasTests = true;
     }
   }
 
   // Check for Python
   const requirementsPath = path.join(rootPath, 'requirements.txt');
   const pyprojectPath = path.join(rootPath, 'pyproject.toml');
-  if (fs.existsSync(requirementsPath) || fs.existsSync(pyprojectPath)) {
+  const hasPython = (await fileExists(requirementsPath)) || (await fileExists(pyprojectPath));
+
+  if (hasPython) {
     stack.languages.push('Python');
     stack.packageManager = 'pip';
 
     // Try to detect Python frameworks
-    if (fs.existsSync(requirementsPath)) {
+    if (await fileExists(requirementsPath)) {
       try {
-        const requirements = fs.readFileSync(requirementsPath, 'utf-8').toLowerCase();
+        const requirements = (await fs.readFile(requirementsPath, 'utf-8')).toLowerCase();
         if (requirements.includes('django')) {
           stack.frameworks.push('Django');
         }
@@ -210,13 +223,13 @@ function detectTechStack(rootPath: string): WorkspaceContext['techStack'] {
   }
 
   // Check for Rust
-  if (fs.existsSync(path.join(rootPath, 'Cargo.toml'))) {
+  if (await fileExists(path.join(rootPath, 'Cargo.toml'))) {
     stack.languages.push('Rust');
     stack.packageManager = 'cargo';
   }
 
   // Check for Go
-  if (fs.existsSync(path.join(rootPath, 'go.mod'))) {
+  if (await fileExists(path.join(rootPath, 'go.mod'))) {
     stack.languages.push('Go');
     stack.packageManager = 'go';
   }

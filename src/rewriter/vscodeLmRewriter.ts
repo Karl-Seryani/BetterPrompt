@@ -6,6 +6,7 @@
 import * as vscode from 'vscode';
 import { buildSystemPrompt, buildUserPrompt, calculateConfidence } from './sharedPrompts';
 import type { RewriteResult } from './types';
+import { formatUserError } from '../utils/errorHandler';
 
 export interface VsCodeLmConfig {
   preferredModel?: 'auto' | 'gpt-4' | 'claude' | 'groq';
@@ -80,16 +81,9 @@ export class VsCodeLmRewriter {
         confidence: calculateConfidence(vaguePrompt, enhanced),
       };
     } catch (error) {
-      if (error instanceof vscode.LanguageModelError) {
-        // Handle specific LM errors
-        const errorMessage = error.message.toLowerCase();
-        if (errorMessage.includes('permission') || errorMessage.includes('consent')) {
-          throw new Error('Language model access denied. Please grant permissions in VS Code.');
-        } else if (errorMessage.includes('blocked') || errorMessage.includes('policy')) {
-          throw new Error('Request was blocked. The prompt may violate content policies.');
-        }
-      }
-      throw new Error(`VS Code Language Model error: ${error instanceof Error ? error.message : String(error)}`);
+      // Use error handler to provide user-friendly message
+      const userMessage = formatUserError(error);
+      throw new Error(userMessage);
     }
   }
 

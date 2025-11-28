@@ -48,18 +48,22 @@ describe('Onboarding Flow', () => {
   });
 
   describe('Welcome Message', () => {
-    it('should show simplified welcome message on first run', async () => {
+    it('should show transparent welcome message about quota usage on first run', async () => {
       (vscode.window.showInformationMessage as jest.Mock).mockResolvedValue('Try It Now');
 
       await vscode.window.showInformationMessage(
-        'BetterPrompt installed! 🚀\n\nI intelligently enhance your prompts to get better AI responses. No setup needed.',
+        'BetterPrompt installed! 🚀\n\n' +
+          'I enhance your prompts using GitHub Copilot (consumes your Copilot quota).\n\n' +
+          'To preserve your Copilot quota, you can use free Groq API instead - configure in settings.',
         'Try It Now',
+        'Use Groq Instead',
         'Dismiss'
       );
 
       expect(vscode.window.showInformationMessage).toHaveBeenCalledWith(
         expect.stringContaining('BetterPrompt installed'),
         'Try It Now',
+        'Use Groq Instead',
         'Dismiss'
       );
     });
@@ -70,10 +74,24 @@ describe('Onboarding Flow', () => {
       const result = await vscode.window.showInformationMessage(
         'BetterPrompt installed! 🚀',
         'Try It Now',
+        'Use Groq Instead',
         'Dismiss'
       );
 
       expect(result).toBe('Try It Now');
+    });
+
+    it('should allow user to choose Groq instead', async () => {
+      (vscode.window.showInformationMessage as jest.Mock).mockResolvedValue('Use Groq Instead');
+
+      const result = await vscode.window.showInformationMessage(
+        'BetterPrompt installed! 🚀',
+        'Try It Now',
+        'Use Groq Instead',
+        'Dismiss'
+      );
+
+      expect(result).toBe('Use Groq Instead');
     });
 
     it('should allow user to dismiss', async () => {
@@ -82,6 +100,7 @@ describe('Onboarding Flow', () => {
       const result = await vscode.window.showInformationMessage(
         'BetterPrompt installed! 🚀',
         'Try It Now',
+        'Use Groq Instead',
         'Dismiss'
       );
 
@@ -94,6 +113,7 @@ describe('Onboarding Flow', () => {
       const result = await vscode.window.showInformationMessage(
         'BetterPrompt installed! 🚀',
         'Try It Now',
+        'Use Groq Instead',
         'Dismiss'
       );
 
@@ -170,6 +190,7 @@ describe('Onboarding Flow', () => {
       const choice = await vscode.window.showInformationMessage(
         'BetterPrompt installed! 🚀',
         'Try It Now',
+        'Use Groq Instead',
         'Dismiss'
       );
 
@@ -181,6 +202,26 @@ describe('Onboarding Flow', () => {
       expect(mockContext.globalState.get('hasCompletedOnboarding')).toBe(true);
     });
 
+    it('should complete onboarding flow with "Use Groq Instead"', async () => {
+      // User clicks "Use Groq Instead"
+      (vscode.window.showInformationMessage as jest.Mock).mockResolvedValue('Use Groq Instead');
+
+      const choice = await vscode.window.showInformationMessage(
+        'BetterPrompt installed! 🚀',
+        'Try It Now',
+        'Use Groq Instead',
+        'Dismiss'
+      );
+
+      if (choice === 'Use Groq Instead') {
+        await mockContext.globalState.update('hasCompletedOnboarding', true);
+      }
+
+      // Verify onboarding marked complete
+      expect(choice).toBe('Use Groq Instead');
+      expect(mockContext.globalState.get('hasCompletedOnboarding')).toBe(true);
+    });
+
     it('should complete onboarding flow with "Dismiss"', async () => {
       // User clicks "Dismiss"
       (vscode.window.showInformationMessage as jest.Mock).mockResolvedValue('Dismiss');
@@ -188,6 +229,7 @@ describe('Onboarding Flow', () => {
       const choice = await vscode.window.showInformationMessage(
         'BetterPrompt installed! 🚀',
         'Try It Now',
+        'Use Groq Instead',
         'Dismiss'
       );
 
@@ -206,6 +248,7 @@ describe('Onboarding Flow', () => {
       const choice = await vscode.window.showInformationMessage(
         'BetterPrompt installed! 🚀',
         'Try It Now',
+        'Use Groq Instead',
         'Dismiss'
       );
 

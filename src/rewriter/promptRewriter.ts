@@ -9,6 +9,7 @@ import { GroqRewriter } from './groqRewriter';
 import type { RewriteResult } from './types';
 import { VsCodeLmRewriter, isVsCodeLmAvailable } from './vscodeLmRewriter';
 import { detectContext, formatContextForPrompt, WorkspaceContext } from '../context/contextDetector';
+import { getGlobalRateLimiter } from '../utils/rateLimiter';
 
 export interface RewriteOptions {
   groqApiKey?: string; // Optional - fallback if VS Code LM not available
@@ -76,11 +77,22 @@ export class PromptRewriter {
         };
       }
 
+      // Step 2.5: Check rate limit BEFORE making API calls
+      const rateLimiter = getGlobalRateLimiter();
+      if (!rateLimiter.canMakeRequest()) {
+        const timeUntilReset = Math.ceil(rateLimiter.getTimeUntilReset() / 1000);
+        return {
+          shouldRewrite: false,
+          analysis,
+          error: `Rate limit exceeded (10 enhancements/minute). Try again in ${timeUntilReset} seconds.`,
+        };
+      }
+
       // Step 3: Only detect context if we're going to rewrite
       let context: WorkspaceContext | undefined;
       let contextString = '';
       if (this.includeContext) {
-        context = detectContext();
+        context = await detectContext();
         contextString = formatContextForPrompt(context);
       }
 
@@ -88,6 +100,7 @@ export class PromptRewriter {
       if (this.preferredModel === 'groq') {
         if (this.groqRewriter) {
           const rewrite = await this.groqRewriter.enhancePrompt(prompt, contextString);
+          rateLimiter.recordRequest(); // Record successful request
           return {
             shouldRewrite: true,
             analysis,
@@ -108,6 +121,7 @@ export class PromptRewriter {
       if (vsCodeLmAvailable) {
         try {
           const rewrite = await this.vscodeLmRewriter.enhancePrompt(prompt, contextString);
+          rateLimiter.recordRequest(); // Record successful request
           return {
             shouldRewrite: true,
             analysis,
@@ -122,6 +136,7 @@ export class PromptRewriter {
       // Step 6: Fallback to Groq API
       if (this.groqRewriter) {
         const rewrite = await this.groqRewriter.enhancePrompt(prompt, contextString);
+        rateLimiter.recordRequest(); // Record successful request
         return {
           shouldRewrite: true,
           analysis,

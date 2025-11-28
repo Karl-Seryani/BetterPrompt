@@ -183,17 +183,25 @@ function showWelcomeMessage(context: vscode.ExtensionContext): void {
 }
 
 /**
- * First-run onboarding flow - simple welcome, zero setup required
+ * First-run onboarding flow - transparent about quota usage with option to use Groq
  */
 async function showOnboardingFlow(context: vscode.ExtensionContext): Promise<void> {
   const choice = await vscode.window.showInformationMessage(
-    'BetterPrompt installed! 🚀\n\nI intelligently enhance your prompts to get better AI responses. No setup needed.',
+    'BetterPrompt installed! 🚀\n\n' +
+      'I enhance your prompts using GitHub Copilot (consumes your Copilot quota).\n\n' +
+      'To preserve your Copilot quota, you can use free Groq API instead - configure in settings.',
     'Try It Now',
+    'Use Groq Instead',
     'Dismiss'
   );
 
   if (choice === 'Try It Now') {
     await vscode.commands.executeCommand('betterprompt.optimizePrompt');
+  } else if (choice === 'Use Groq Instead') {
+    await handleShowSettings();
+    void vscode.window.showInformationMessage(
+      'Set "Preferred Model" to "groq" and add your free Groq API key from https://console.groq.com'
+    );
   }
 
   void context.globalState.update('hasCompletedOnboarding', true);
