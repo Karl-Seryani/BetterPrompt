@@ -1,13 +1,15 @@
 import * as vscode from 'vscode';
 import { PromptRewriter, RewriteWorkflowResult } from './rewriter/promptRewriter';
 import { registerChatParticipant } from './chat/chatParticipant';
+import { logger } from './utils/logger';
 
 /**
  * Extension activation entry point
  * Called when the extension is first activated
  */
 export function activate(context: vscode.ExtensionContext): void {
-  // Extension activated successfully
+  logger.info('BetterPrompt extension activated');
+  logger.debug('Extension context', { extensionPath: context.extensionPath });
 
   // Register the optimize prompt command
   const optimizePromptCommand = vscode.commands.registerCommand('betterprompt.optimizePrompt', () => {

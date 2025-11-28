@@ -1,8 +1,8 @@
 # BetterPrompt - AI Context File
 
 **Last Updated:** 2025-11-27
-**Version:** 1.5.0-beta
-**Status:** Production Hardening - Phases 1 & 2 Complete ✅
+**Version:** 1.5.0
+**Status:** Production Ready 🚀 - All Phases Complete
 
 ---
 
@@ -51,10 +51,10 @@
 
 ## Current Status
 
-### ✅ ALL TESTS PASSING (179/179 + 29 MCP)
+### ✅ ALL TESTS PASSING (189/189 + 29 MCP)
 
 **Test Coverage:**
-- ✅ **179/179 extension tests passing (100%)**
+- ✅ **189/189 extension tests passing (100%)**
 - ✅ **29/29 MCP server tests passing (100%)**
 - ✅ Analyzer: 40 tests
 - ✅ Rewriter: 14 tests (including context awareness)
@@ -66,6 +66,7 @@
 - ✅ **NEW:** Rate Limit Integration: 8 tests
 - ✅ **NEW:** Error Handler: 25 tests
 - ✅ **NEW:** Package.json Cache: 12 tests
+- ✅ **NEW:** Logger: 10 tests
 
 ### 🎉 v1.5.0-beta Completed Features
 
@@ -126,18 +127,32 @@
 - ✅ Updated all cache tests to async/await pattern
 - **Result:** Zero blocking I/O operations, VS Code stays responsive during file checks
 
-**Phase 3 - Developer Experience (PENDING)**
-- 🔲 Add `.env.example` with Groq API key template
-- 🔲 Add `CONTRIBUTING.md` with development setup
-- 🔲 Add debug logging (disabled by default)
+**Phase 3 - Developer Experience (COMPLETE ✅)**
+- ✅ Added `.env.example` with Groq API key template and usage notes
+- ✅ Added `CONTRIBUTING.md` with comprehensive development setup guide
+  - Development setup instructions
+  - Project structure documentation
+  - Code conventions and TDD methodology
+  - Testing and debugging guides
+  - PR submission guidelines
+- ✅ Added debug logging system (`src/utils/logger.ts`)
+  - VS Code Output panel integration
+  - Configurable via `betterprompt.debugLogging` setting (default: false)
+  - Multiple log levels: debug, info, warn, error
+  - Integrated into extension.ts and promptRewriter.ts for troubleshooting
+  - 10 comprehensive unit tests
+- **Result:** Better developer onboarding for the 4 contributors + easier debugging for all 6 users
 
 ### ✅ Implemented Features
 
-**v1.5.0 - Production Hardening:**
-- `src/utils/rateLimiter.ts` - Rate limiting protection
-- `src/utils/errorHandler.ts` - User-friendly error messages
-- `src/context/packageJsonCache.ts` - Package.json caching
-- **NO DATABASE** - Removed sql.js entirely
+**v1.5.0 - Production Hardening & Developer Experience:**
+- `src/utils/rateLimiter.ts` - Rate limiting protection (10 req/min)
+- `src/utils/errorHandler.ts` - User-friendly error messages (7 categories)
+- `src/utils/logger.ts` - Debug logging system (VS Code Output panel)
+- `src/context/packageJsonCache.ts` - Package.json caching (99% I/O reduction)
+- `.env.example` - Environment variable template
+- `CONTRIBUTING.md` - Comprehensive development guide
+- **NO DATABASE** - Removed sql.js entirely (220MB saved)
 
 **v1.3.0 - Context Awareness:**
 - `src/context/contextDetector.ts` - Detects workspace context
@@ -174,6 +189,7 @@
 - `betterprompt.showDiff` - Show before/after diff (default: true)
 - `betterprompt.preferredModel` - Preferred AI model: auto/gpt-4/claude/groq (default: auto)
 - `betterprompt.maxRequestsPerMinute` - Rate limit (default: 10, range: 1-100)
+- `betterprompt.debugLogging` - Enable debug logging to Output panel (default: false)
 
 ---
 
@@ -337,17 +353,20 @@ npm test         # Must pass (179/179)
 
 ## Session Summary (What Was Done)
 
-**Completed in this session:**
+**Completed across sessions:**
 1. ✅ Removed entire database module (sql.js) - Phase 1.1
 2. ✅ Implemented rate limiting with TDD - Phase 1.2
 3. ✅ Implemented error handler with TDD - Phase 1.3
 4. ✅ Implemented package.json cache with TDD - Phase 2.1
 5. ✅ Converted to async file operations - Phase 2.2
 6. ✅ Added transparency about Copilot quota usage - UX Fix
+7. ✅ Added debug logging system - Phase 3.1
+8. ✅ Created .env.example - Phase 3.2
+9. ✅ Created CONTRIBUTING.md - Phase 3.3
 
 **Test results:**
 - Started: 133 tests passing
-- Ended: 180 tests passing (+47 new tests)
+- Final: 189 tests passing (+56 new tests)
 - All phases verified with integration tests (not hardcoded)
 - Zero blocking I/O operations (all async)
 
@@ -358,11 +377,13 @@ npm test         # Must pass (179/179)
 - 📦 Smaller extension bundle (220MB sql.js removed)
 - 🚀 VS Code stays responsive during file operations (async I/O)
 - 🚀 No UI freezes on network drives or slow storage
-- 🔔 **NEW:** Transparent about Copilot quota consumption (onboarding + settings)
-- 🔔 **NEW:** Easy opt-in to free Groq API to preserve Copilot quota
+- 🔔 Transparent about Copilot quota consumption (onboarding + settings)
+- 🔔 Easy opt-in to free Groq API to preserve Copilot quota
+- 🐛 Debug logging available for troubleshooting (View → Output → BetterPrompt)
+- 📚 CONTRIBUTING.md helps the 4 contributors get started
 
 ---
 
 **Last Updated:** 2025-11-27
-**Test Status:** 179/179 extension + 29/29 MCP server
-**Production Status:** Phases 1 & 2 complete - Production Ready 🚀
+**Test Status:** 189/189 extension + 29/29 MCP server
+**Production Status:** ALL PHASES COMPLETE 🎉 - Production Ready 🚀

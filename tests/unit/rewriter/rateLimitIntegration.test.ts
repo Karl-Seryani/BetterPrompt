@@ -6,6 +6,19 @@
 import { PromptRewriter } from '../../../src/rewriter/promptRewriter';
 import { resetGlobalRateLimiter, getGlobalRateLimiter } from '../../../src/utils/rateLimiter';
 
+// Mock logger
+jest.mock('../../../src/utils/logger', () => ({
+  logger: {
+    debug: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+    show: jest.fn(),
+    clear: jest.fn(),
+    updateDebugSetting: jest.fn(),
+  },
+}));
+
 // Mock context detector
 jest.mock('../../../src/context/contextDetector', () => ({
   detectContext: jest.fn().mockReturnValue({

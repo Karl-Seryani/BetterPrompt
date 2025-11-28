@@ -10,6 +10,7 @@ import type { RewriteResult } from './types';
 import { VsCodeLmRewriter, isVsCodeLmAvailable } from './vscodeLmRewriter';
 import { detectContext, formatContextForPrompt, WorkspaceContext } from '../context/contextDetector';
 import { getGlobalRateLimiter } from '../utils/rateLimiter';
+import { logger } from '../utils/logger';
 
 export interface RewriteOptions {
   groqApiKey?: string; // Optional - fallback if VS Code LM not available
@@ -66,10 +67,13 @@ export class PromptRewriter {
   public async processPrompt(prompt: string): Promise<RewriteWorkflowResult> {
     try {
       // Step 1: Analyze prompt for vagueness FIRST (fast, no I/O)
+      logger.debug('Analyzing prompt', { promptLength: prompt.length });
       const analysis = analyzePrompt(prompt);
+      logger.debug('Vagueness analysis complete', { score: analysis.score, threshold: this.threshold });
 
       // Step 2: Check if rewrite is needed BEFORE detecting context
       if (analysis.score < this.threshold) {
+        logger.debug('Prompt below threshold, skipping rewrite');
         return {
           shouldRewrite: false,
           analysis,
@@ -81,6 +85,7 @@ export class PromptRewriter {
       const rateLimiter = getGlobalRateLimiter();
       if (!rateLimiter.canMakeRequest()) {
         const timeUntilReset = Math.ceil(rateLimiter.getTimeUntilReset() / 1000);
+        logger.warn('Rate limit exceeded', { timeUntilReset });
         return {
           shouldRewrite: false,
           analysis,
@@ -89,18 +94,26 @@ export class PromptRewriter {
       }
 
       // Step 3: Only detect context if we're going to rewrite
+      logger.debug('Detecting workspace context', { includeContext: this.includeContext });
       let context: WorkspaceContext | undefined;
       let contextString = '';
       if (this.includeContext) {
         context = await detectContext();
         contextString = formatContextForPrompt(context);
+        logger.debug('Context detected', {
+          hasFile: !!context?.currentFile,
+          frameworks: context?.techStack?.frameworks?.length || 0,
+          languages: context?.techStack?.languages?.length || 0,
+        });
       }
 
       // Step 4: If user prefers Groq, skip VS Code LM
       if (this.preferredModel === 'groq') {
+        logger.debug('User prefers Groq, using Groq API');
         if (this.groqRewriter) {
           const rewrite = await this.groqRewriter.enhancePrompt(prompt, contextString);
           rateLimiter.recordRequest(); // Record successful request
+          logger.info('Prompt enhanced successfully via Groq');
           return {
             shouldRewrite: true,
             analysis,
@@ -108,6 +121,7 @@ export class PromptRewriter {
             context,
           };
         }
+        logger.error('Groq API key not configured');
         return {
           shouldRewrite: false,
           analysis,
@@ -117,26 +131,33 @@ export class PromptRewriter {
       }
 
       // Step 5: Try VS Code Language Model first (for auto, gpt-4, claude preferences)
+      logger.debug('Checking VS Code LM availability');
       const vsCodeLmAvailable = await isVsCodeLmAvailable();
       if (vsCodeLmAvailable) {
         try {
+          logger.debug('Attempting VS Code LM enhancement', { preferredModel: this.preferredModel });
           const rewrite = await this.vscodeLmRewriter.enhancePrompt(prompt, contextString);
           rateLimiter.recordRequest(); // Record successful request
+          logger.info('Prompt enhanced successfully via VS Code LM');
           return {
             shouldRewrite: true,
             analysis,
             rewrite,
             context,
           };
-        } catch {
-          // VS Code LM failed, silently fall back to Groq
+        } catch (error) {
+          logger.warn('VS Code LM failed, falling back to Groq', error);
         }
+      } else {
+        logger.debug('VS Code LM not available, will try Groq fallback');
       }
 
       // Step 6: Fallback to Groq API
       if (this.groqRewriter) {
+        logger.debug('Using Groq API fallback');
         const rewrite = await this.groqRewriter.enhancePrompt(prompt, contextString);
         rateLimiter.recordRequest(); // Record successful request
+        logger.info('Prompt enhanced successfully via Groq fallback');
         return {
           shouldRewrite: true,
           analysis,
@@ -146,6 +167,7 @@ export class PromptRewriter {
       }
 
       // Step 7: No rewriter available
+      logger.error('No AI model available');
       return {
         shouldRewrite: false,
         analysis,
@@ -153,6 +175,7 @@ export class PromptRewriter {
         context,
       };
     } catch (error) {
+      logger.error('Unexpected error in prompt processing', error);
       return {
         shouldRewrite: false,
         analysis: analyzePrompt(prompt),

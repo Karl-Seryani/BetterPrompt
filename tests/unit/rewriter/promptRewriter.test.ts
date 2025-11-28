@@ -1,6 +1,19 @@
 import { PromptRewriter, RewriteOptions } from '../../../src/rewriter/promptRewriter';
 import { IssueType } from '../../../core/analyzer';
 
+// Mock logger
+jest.mock('../../../src/utils/logger', () => ({
+  logger: {
+    debug: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+    show: jest.fn(),
+    clear: jest.fn(),
+    updateDebugSetting: jest.fn(),
+  },
+}));
+
 // Mock context detector
 jest.mock('../../../src/context/contextDetector', () => {
   return {

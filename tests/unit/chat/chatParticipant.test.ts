@@ -3,6 +3,19 @@ import { registerChatParticipant } from '../../../src/chat/chatParticipant';
 import { analyzePrompt } from '../../../core/analyzer';
 import { PromptRewriter } from '../../../src/rewriter/promptRewriter';
 
+// Mock logger
+jest.mock('../../../src/utils/logger', () => ({
+  logger: {
+    debug: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+    show: jest.fn(),
+    clear: jest.fn(),
+    updateDebugSetting: jest.fn(),
+  },
+}));
+
 // Mock VS Code API
 jest.mock('vscode', () => ({
   workspace: {

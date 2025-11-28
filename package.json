@@ -131,6 +131,11 @@
           "minimum": 1,
           "maximum": 100,
           "description": "Maximum number of prompt enhancements allowed per minute (rate limiting protection)"
+        },
+        "betterprompt.debugLogging": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable debug logging to VS Code Output panel (for troubleshooting)"
         }
       }
     }
