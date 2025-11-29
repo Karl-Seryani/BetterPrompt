@@ -5,10 +5,11 @@
 
 import * as vscode from 'vscode';
 import { buildSystemPrompt, buildUserPrompt } from './sharedPrompts';
-import { calculateConfidence } from './qualityAnalyzer';
+import { calculateConfidenceAsync } from './qualityAnalyzer';
 import type { RewriteResult } from './types';
 import { formatUserError } from '../utils/errorHandler';
 import type { AnalysisResult } from '../../core/analyzer';
+import type { VaguenessAnalysisResult } from '../ml/vaguenessService';
 
 export interface VsCodeLmConfig {
   preferredModel?: 'auto' | 'gpt-4' | 'groq';
@@ -48,7 +49,7 @@ export class VsCodeLmRewriter {
     vaguePrompt: string,
     context?: string,
     cancellationToken?: vscode.CancellationToken,
-    analysis?: AnalysisResult
+    analysis?: AnalysisResult | VaguenessAnalysisResult
   ): Promise<RewriteResult> {
     if (!vaguePrompt || vaguePrompt.trim().length === 0) {
       throw new Error('Prompt cannot be empty');
@@ -87,12 +88,15 @@ export class VsCodeLmRewriter {
 
       enhanced = this.cleanEnhancedPrompt(enhanced.trim());
 
+      // Calculate confidence using AI comparative scoring (with fallback to rules)
+      const confidence = await calculateConfidenceAsync(vaguePrompt, enhanced, analysis, token);
+
       return {
         original: vaguePrompt,
         enhanced,
         model: `${model.vendor}/${model.family}`,
         tokensUsed: undefined, // VS Code API doesn't expose token counts
-        confidence: calculateConfidence(vaguePrompt, enhanced, analysis),
+        confidence,
       };
     } catch (error) {
       // Use error handler to provide user-friendly message

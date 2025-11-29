@@ -133,6 +133,7 @@ export function registerChatParticipant(context: vscode.ExtensionContext): void 
           if (mode === 'review') {
             stream.markdown(`## 📊 Analysis Results\n\n`);
             stream.markdown(`- **Vagueness Score:** ${analysis.score}/100\n`);
+            stream.markdown(`- **Analysis Source:** ${analysis.source}\n`);
             stream.markdown(`- **Enhancement Model:** ${rewrite.model}\n`);
             stream.markdown(`- **Confidence:** ${Math.round(rewrite.confidence * 100)}%\n\n`);
 

@@ -11,6 +11,7 @@
  * - CONFIDENCE_WEIGHT_RELEVANCE (default: 0.15) - Stayed on topic?
  */
 
+import * as vscode from 'vscode';
 import { PorterStemmer } from 'natural';
 import { calculateSpecificityScore, analyzePrompt, type AnalysisResult, IssueType } from '../../core/analyzer';
 import { ACTION_VERBS, TECH_OBJECTS, FRAMEWORK_PATTERN, VAGUE_WORDS_PATTERN, STOP_WORDS } from '../../core/patterns';
@@ -21,6 +22,8 @@ import {
   CONFIDENCE_WEIGHT_RELEVANCE,
   SPECIFICITY_GAIN_NORMALIZER,
 } from '../../core/constants';
+import { ComparativeScorer } from '../ml/comparativeScorer';
+import { logger } from '../utils/logger';
 
 /**
  * Result of quality analysis with component breakdown
@@ -320,7 +323,7 @@ export function calculateEnhancementQuality(
 }
 
 /**
- * Calculates confidence score for the rewrite
+ * Calculates confidence score for the rewrite using rule-based analysis
  * Convenience wrapper around calculateEnhancementQuality
  *
  * @param original Original prompt
@@ -333,4 +336,52 @@ export function calculateConfidence(original: string, enhanced: string, existing
   const quality = calculateEnhancementQuality(original, enhanced, analysis);
 
   return quality.confidence;
+}
+
+// Singleton scorer instance (lazy initialized)
+let comparativeScorer: ComparativeScorer | null = null;
+
+function getComparativeScorer(): ComparativeScorer {
+  if (!comparativeScorer) {
+    comparativeScorer = new ComparativeScorer();
+  }
+  return comparativeScorer;
+}
+
+/**
+ * Calculates confidence score using AI comparative scoring when available
+ *
+ * This function attempts to use Copilot to semantically compare the original
+ * and enhanced prompts. If Copilot is unavailable or the comparison fails,
+ * it falls back to the rule-based calculateConfidence.
+ *
+ * @param original Original prompt
+ * @param enhanced Enhanced prompt
+ * @param existingAnalysis Optional pre-computed analysis for fallback
+ * @param cancellationToken Optional cancellation token
+ * @returns Confidence score 0-1
+ */
+export async function calculateConfidenceAsync(
+  original: string,
+  enhanced: string,
+  existingAnalysis?: AnalysisResult,
+  cancellationToken?: vscode.CancellationToken
+): Promise<number> {
+  // Try AI comparative scoring first
+  try {
+    const scorer = getComparativeScorer();
+    const aiConfidence = await scorer.getConfidence(original, enhanced, cancellationToken);
+
+    if (aiConfidence > 0) {
+      logger.debug(`AI confidence: ${(aiConfidence * 100).toFixed(1)}%`);
+      return aiConfidence;
+    }
+  } catch (error) {
+    logger.debug(`AI scoring failed, using rule-based: ${error instanceof Error ? error.message : String(error)}`);
+  }
+
+  // Fall back to rule-based scoring
+  const ruleConfidence = calculateConfidence(original, enhanced, existingAnalysis);
+  logger.debug(`Rule-based confidence: ${(ruleConfidence * 100).toFixed(1)}%`);
+  return ruleConfidence;
 }

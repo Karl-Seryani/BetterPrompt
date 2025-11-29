@@ -42,6 +42,10 @@
       {
         "command": "betterprompt.setGroqApiKey",
         "title": "BetterPrompt: Set Groq API Key"
+      },
+      {
+        "command": "betterprompt.generateTrainingData",
+        "title": "BetterPrompt: Generate Training Data (Dev)"
       }
     ],
     "keybindings": [

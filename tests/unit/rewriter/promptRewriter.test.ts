@@ -14,25 +14,31 @@ jest.mock('../../../src/utils/logger', () => ({
   },
 }));
 
-// Mock context detector
-jest.mock('../../../src/context/contextDetector', () => {
+// Mock tiered context detector
+jest.mock('../../../src/context/tieredContextDetector', () => {
   return {
-    detectContext: jest.fn().mockReturnValue({
-      currentFile: {
-        path: '/project/src/App.tsx',
-        name: 'App.tsx',
-        language: 'typescriptreact',
-        relativePath: 'src/App.tsx',
+    detectTieredContext: jest.fn().mockResolvedValue({
+      basic: {
+        currentFile: {
+          path: '/project/src/App.tsx',
+          name: 'App.tsx',
+          language: 'typescriptreact',
+          relativePath: 'src/App.tsx',
+        },
+        techStack: {
+          languages: ['TypeScript'],
+          frameworks: ['React'],
+          hasTypeScript: true,
+          hasTests: true,
+          packageManager: 'npm',
+        },
       },
-      techStack: {
-        languages: ['TypeScript'],
-        frameworks: ['React'],
-        hasTypeScript: true,
-        hasTests: true,
-        packageManager: 'npm',
-      },
+      structural: null,
+      semantic: null,
+      formatted: 'Currently editing: src/App.tsx (typescriptreact)\nTech stack: React\nUsing TypeScript',
+      tiersUsed: { basic: true, structural: false, semantic: false },
     }),
-    formatContextForPrompt: jest.fn().mockReturnValue('Currently editing: src/App.tsx (typescriptreact)\nTech stack: React\nUsing TypeScript'),
+    getFormattedContext: jest.fn().mockReturnValue('Currently editing: src/App.tsx (typescriptreact)\nTech stack: React\nUsing TypeScript'),
   };
 });
 
@@ -182,9 +188,10 @@ describe('PromptRewriter', () => {
       const rewriter = new PromptRewriter({ ...mockOptions, includeContext: true });
       const result = await rewriter.processPrompt('make a website');
 
-      // Context should be included in result
+      // Context should be included in result (now TieredContext)
       expect(result.context).toBeDefined();
-      expect(result.context?.techStack).toBeDefined();
+      expect(result.context?.tiersUsed).toBeDefined();
+      expect(result.context?.tiersUsed.basic).toBe(true);
     });
 
     it('should not include context when disabled', async () => {

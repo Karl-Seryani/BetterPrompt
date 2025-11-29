@@ -2,14 +2,18 @@
  * Prompt Rewriter Orchestrator
  * Coordinates analysis, rewriting, and user approval workflow
  * Implements fallback: VS Code LM → Groq → Error
+ *
+ * Uses:
+ * - ML-powered vagueness analysis (with rule-based fallback)
+ * - Tiered context detection (basic, structural, semantic)
  */
 
 import * as vscode from 'vscode';
-import { analyzePrompt, AnalysisResult } from '../../core/analyzer';
 import { GroqRewriter } from './groqRewriter';
 import type { RewriteResult } from './types';
 import { VsCodeLmRewriter, isVsCodeLmAvailable } from './vscodeLmRewriter';
-import { detectContext, formatContextForPrompt, WorkspaceContext } from '../context/contextDetector';
+import { detectTieredContext, getFormattedContext, type TieredContext } from '../context/tieredContextDetector';
+import { getVaguenessService, type VaguenessAnalysisResult } from '../ml/vaguenessService';
 import { getGlobalRateLimiter } from '../utils/rateLimiter';
 import { getPromptCache } from '../utils/promptCache';
 import { getTelemetry, TelemetryEvent } from '../utils/telemetry';
@@ -24,11 +28,11 @@ export interface RewriteOptions {
 
 export interface RewriteWorkflowResult {
   shouldRewrite: boolean;
-  analysis: AnalysisResult;
+  analysis: VaguenessAnalysisResult;
   rewrite?: RewriteResult;
   skipped?: boolean;
   error?: string;
-  context?: WorkspaceContext;
+  context?: TieredContext;
   /** True if the result was served from cache */
   cached?: boolean;
 }
@@ -74,21 +78,28 @@ export class PromptRewriter {
     prompt: string,
     cancellationToken?: vscode.CancellationToken
   ): Promise<RewriteWorkflowResult> {
+    const vaguenessService = getVaguenessService();
+
     try {
       // Step 0: Check if already cancelled before starting
       if (cancellationToken?.isCancellationRequested) {
         logger.debug('Request cancelled before processing started');
         return {
           shouldRewrite: false,
-          analysis: analyzePrompt(prompt),
+          analysis: vaguenessService.analyzeVagueness(prompt),
           error: 'Request was cancelled',
         };
       }
 
-      // Step 1: Analyze prompt for vagueness FIRST (fast, no I/O)
+      // Step 1: Analyze prompt for vagueness using ML-powered service
       logger.debug('Analyzing prompt', { promptLength: prompt.length });
-      const analysis = analyzePrompt(prompt);
-      logger.debug('Vagueness analysis complete', { score: analysis.score, threshold: this.threshold });
+      const analysis = vaguenessService.analyzeVagueness(prompt);
+      logger.debug('Vagueness analysis complete', {
+        score: analysis.score,
+        threshold: this.threshold,
+        source: analysis.source,
+        confidence: analysis.confidence,
+      });
 
       // Step 2: Check if rewrite is needed BEFORE detecting context
       if (analysis.score < this.threshold) {
@@ -114,17 +125,18 @@ export class PromptRewriter {
         };
       }
 
-      // Step 3: Only detect context if we're going to rewrite
+      // Step 3: Only detect context if we're going to rewrite (using tiered detection)
       logger.debug('Detecting workspace context', { includeContext: this.includeContext });
-      let context: WorkspaceContext | undefined;
+      let context: TieredContext | undefined;
       let contextString = '';
       if (this.includeContext) {
-        context = await detectContext();
-        contextString = formatContextForPrompt(context);
+        context = await detectTieredContext({ token: cancellationToken });
+        contextString = getFormattedContext(context);
         logger.debug('Context detected', {
-          hasFile: !!context?.currentFile,
-          frameworks: context?.techStack?.frameworks?.length || 0,
-          languages: context?.techStack?.languages?.length || 0,
+          tiersUsed: context.tiersUsed,
+          hasBasic: context.tiersUsed.basic,
+          hasStructural: context.tiersUsed.structural,
+          hasSemantic: context.tiersUsed.semantic,
         });
       }
 
@@ -243,7 +255,7 @@ export class PromptRewriter {
       });
       return {
         shouldRewrite: false,
-        analysis: analyzePrompt(prompt),
+        analysis: vaguenessService.analyzeVagueness(prompt),
         error: error instanceof Error ? error.message : String(error),
       };
     }

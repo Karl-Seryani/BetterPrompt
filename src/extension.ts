@@ -5,6 +5,7 @@ import { logger } from './utils/logger';
 import { initializeRateLimiter } from './utils/rateLimiter';
 import { initializeTelemetry } from './utils/telemetry';
 import { initializeSecretStorage, getSecretStorage } from './utils/secretStorage';
+import { registerTrainingDataCommand } from './ml/trainingDataGenerator';
 
 /**
  * Extension activation entry point
@@ -59,6 +60,9 @@ export function activate(context: vscode.ExtensionContext): void {
 
   // Register chat participant for @betterprompt in VS Code chat
   registerChatParticipant(context);
+
+  // Register training data generation command (for ML development)
+  registerTrainingDataCommand(context);
 
   // Show welcome message on first activation
   showWelcomeMessage(context);

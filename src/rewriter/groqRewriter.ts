@@ -5,10 +5,11 @@
 
 import * as vscode from 'vscode';
 import { buildSystemPrompt, buildUserPrompt } from './sharedPrompts';
-import { calculateConfidence } from './qualityAnalyzer';
+import { calculateConfidenceAsync } from './qualityAnalyzer';
 import type { RewriteResult } from './types';
 import { formatUserError } from '../utils/errorHandler';
 import type { AnalysisResult } from '../../core/analyzer';
+import type { VaguenessAnalysisResult } from '../ml/vaguenessService';
 
 export interface GroqConfig {
   apiKey: string;
@@ -52,7 +53,7 @@ export class GroqRewriter {
     vaguePrompt: string,
     context?: string,
     cancellationToken?: vscode.CancellationToken,
-    analysis?: AnalysisResult
+    analysis?: AnalysisResult | VaguenessAnalysisResult
   ): Promise<RewriteResult> {
     if (!vaguePrompt || vaguePrompt.trim().length === 0) {
       throw new Error('Prompt cannot be empty');
@@ -65,12 +66,15 @@ export class GroqRewriter {
       const response = await this.callGroqAPI(systemPrompt, userPrompt, cancellationToken);
       const enhanced = this.extractEnhancedPrompt(response);
 
+      // Calculate confidence using AI comparative scoring (with fallback to rules)
+      const confidence = await calculateConfidenceAsync(vaguePrompt, enhanced, analysis, cancellationToken);
+
       return {
         original: vaguePrompt,
         enhanced,
         model: this.config.model || DEFAULT_MODEL,
         tokensUsed: response.usage?.total_tokens,
-        confidence: calculateConfidence(vaguePrompt, enhanced, analysis),
+        confidence,
       };
     } catch (error) {
       // Use error handler to provide user-friendly message

@@ -30,7 +30,7 @@ jest.mock('../../../src/rewriter/sharedPrompts', () => ({
 
 // Mock qualityAnalyzer
 jest.mock('../../../src/rewriter/qualityAnalyzer', () => ({
-  calculateConfidence: jest.fn(() => 0.85),
+  calculateConfidenceAsync: jest.fn(() => Promise.resolve(0.85)),
 }));
 
 // Mock errorHandler
@@ -164,7 +164,7 @@ describe('GroqRewriter', () => {
       expect(buildUserPrompt).toHaveBeenCalledWith('make a login', 'React project with TypeScript');
     });
 
-    it('should pass pre-computed analysis to calculateConfidence', async () => {
+    it('should pass pre-computed analysis to calculateConfidenceAsync', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: () => Promise.resolve(mockValidResponse),
@@ -173,11 +173,12 @@ describe('GroqRewriter', () => {
       const mockAnalysis = { score: 75, issues: [], specificityScore: 20 };
       await rewriter.enhancePrompt('make a login', undefined, undefined, mockAnalysis as any);
 
-      const { calculateConfidence } = require('../../../src/rewriter/qualityAnalyzer');
-      expect(calculateConfidence).toHaveBeenCalledWith(
+      const { calculateConfidenceAsync } = require('../../../src/rewriter/qualityAnalyzer');
+      expect(calculateConfidenceAsync).toHaveBeenCalledWith(
         'make a login',
         expect.any(String),
-        mockAnalysis
+        mockAnalysis,
+        undefined // cancellation token
       );
     });
 

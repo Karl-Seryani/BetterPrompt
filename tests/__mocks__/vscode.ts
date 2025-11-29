@@ -29,10 +29,22 @@ export const window = {
   showInputBox: jest.fn(),
   showQuickPick: jest.fn(),
   withProgress: jest.fn(),
+  createOutputChannel: jest.fn().mockReturnValue({
+    appendLine: jest.fn(),
+    append: jest.fn(),
+    clear: jest.fn(),
+    show: jest.fn(),
+    dispose: jest.fn(),
+  }),
 };
 
 export const workspace = {
-  getConfiguration: jest.fn(),
+  getConfiguration: jest.fn().mockReturnValue({
+    get: jest.fn().mockReturnValue(false),
+    update: jest.fn(),
+    has: jest.fn().mockReturnValue(false),
+    inspect: jest.fn(),
+  }),
 };
 
 export const commands = {

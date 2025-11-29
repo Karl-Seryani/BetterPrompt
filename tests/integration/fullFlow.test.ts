@@ -40,12 +40,18 @@ jest.mock('../../src/utils/logger', () => ({
   },
 }));
 
-// Mock context detector
-jest.mock('../../src/context/contextDetector', () => ({
-  detectContext: jest.fn().mockResolvedValue({
-    techStack: { languages: ['TypeScript'], frameworks: [], hasTypeScript: true, hasTests: false },
+// Mock tiered context detector
+jest.mock('../../src/context/tieredContextDetector', () => ({
+  detectTieredContext: jest.fn().mockResolvedValue({
+    basic: {
+      techStack: { languages: ['TypeScript'], frameworks: [], hasTypeScript: true, hasTests: false },
+    },
+    structural: null,
+    semantic: null,
+    formatted: 'Tech: TypeScript',
+    tiersUsed: { basic: true, structural: false, semantic: false },
   }),
-  formatContextForPrompt: jest.fn().mockReturnValue('Tech: TypeScript'),
+  getFormattedContext: jest.fn().mockReturnValue('Tech: TypeScript'),
 }));
 
 // Mock VS Code LM availability
@@ -127,9 +133,10 @@ describe('Full Enhancement Flow', () => {
 
       const result = await rewriter.processPrompt('fix the bug');
 
-      // Context should be detected and included
+      // Context should be detected and included (now TieredContext)
       expect(result.context).toBeDefined();
-      expect(result.context?.techStack).toBeDefined();
+      expect(result.context?.tiersUsed).toBeDefined();
+      expect(result.context?.tiersUsed.basic).toBe(true);
     });
   });
 

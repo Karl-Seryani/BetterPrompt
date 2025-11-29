@@ -1,7 +1,7 @@
 # BetterPrompt - AI Context File
 
-**Version:** 1.7.0
-**Last Updated:** 2025-11-28
+**Version:** 1.8.0-dev
+**Last Updated:** 2025-11-29
 
 ---
 
@@ -17,9 +17,11 @@ VS Code extension that transforms vague prompts into detailed, actionable reques
   - `context/` - Workspace detection, package.json cache
   - `rewriter/` - AI prompt enhancement (Copilot → Groq fallback)
   - `chat/` - @betterprompt chat participant
+  - `ml/` - Machine learning vagueness analysis (NEW in v1.8.0)
   - `utils/` - Rate limiting, error handling, logging
 - `mcp-server/` - Model Context Protocol server
 - `tests/` - Unit + integration tests (mirrors src/ structure)
+- `data/training/` - ML training data (generated via Copilot)
 
 ---
 
@@ -28,12 +30,62 @@ VS Code extension that transforms vague prompts into detailed, actionable reques
 - **TypeScript:** No `any`, explicit return types, strict null checks
 - **Testing:** TDD (RED → GREEN → REFACTOR), tests mirror src/
 - **Before commit:** `npm run compile && npm run lint && npm test`
+- **Constants:** All thresholds/weights in `core/constants.ts`, no hardcoded values in business logic
 
 ---
 
 ## Current Status
 
-**Tests:** 347 extension tests + 29 MCP server tests (all passing, 90%+ coverage)
+**Tests:** 537 extension tests + 29 MCP server tests (all passing)
+
+---
+
+## v1.8.0-dev Changes (In Progress)
+
+### Phase 1: ML-Based Vagueness Analysis ✅ COMPLETE
+
+Built a complete ML pipeline for vagueness detection:
+
+#### New Files Created:
+| File | Purpose |
+|------|---------|
+| `src/ml/trainingDataGenerator.ts` | Generates labeled training data via Copilot |
+| `src/ml/featureExtractor.ts` | TF-IDF vectorization for text → numbers |
+| `src/ml/classifier.ts` | Logistic regression with gradient descent |
+| `src/ml/mlAnalyzer.ts` | Unified ML interface (train/analyze/serialize) |
+| `src/ml/hybridAnalyzer.ts` | ML + Copilot LLM fallback for low confidence |
+| `src/ml/vaguenessService.ts` | Singleton service for extension integration |
+
+#### How It Works:
+1. **Training Data Generation** (one-time via command):
+   - Command: `BetterPrompt: Generate Training Data (Dev)`
+   - Uses Copilot to label ~220 prompt templates with vagueness scores
+   - Outputs: `data/training/labeled-prompts.json`
+
+2. **ML Pipeline**:
+   ```
+   Prompt → TF-IDF Vectorizer → Feature Vector → Logistic Regression → Score (0-100)
+   ```
+
+3. **Hybrid Analysis** (MLVaguenessService):
+   - Runs rule-based analysis (fast, provides issues)
+   - If ML trained + confidence ≥ 60%: combines scores (70% ML + 30% rules)
+   - If ML confidence low: falls back to rules only
+
+#### Test ML Locally:
+```bash
+# Generate training data first (in VS Code Extension Host)
+# Then test:
+npm test -- --testPathPattern="testVagueness" --verbose
+```
+
+### Phase 2: AI Comparative Scorer (NEXT)
+- Replace heuristic confidence with AI-based comparison
+
+### Phase 3: Context Detection (PENDING)
+- Tier 1: Basic (current file, tech stack)
+- Tier 2: Structural (imports, exports, types)
+- Tier 3: Semantic (with user consent)
 
 ---
 
@@ -71,76 +123,6 @@ VS Code extension that transforms vague prompts into detailed, actionable reques
 - **New:** `initializeRateLimiter(context)` function
 - **Benefit:** Proper cleanup on extension deactivation via ExtensionContext subscriptions
 
-### Files Changed in v1.7.0
-
-| File | Change |
-|------|--------|
-| `package.json` | Version 1.7.0, added `natural` + `@types/natural` |
-| `core/patterns.ts` | NEW: Shared pattern definitions |
-| `core/constants.ts` | NEW: Shared constants |
-| `core/analyzer.ts` | Imports from patterns.ts |
-| `src/rewriter/qualityAnalyzer.ts` | Uses natural's PorterStemmer, imports patterns |
-| `src/rewriter/promptRewriter.ts` | Added cancellation check after context detection |
-| `src/chat/chatParticipant.ts` | Context-aware error messages, uses ENHANCEMENT_TIMEOUT_MS |
-| `src/utils/rateLimiter.ts` | Added initializeRateLimiter(), uses constants |
-| `src/extension.ts` | Calls initializeRateLimiter(context) |
-| `tests/integration/fullFlow.test.ts` | NEW: Integration test suite |
-
----
-
-## v1.6.1 Changes (Previous)
-
-### Bug Fixes
-- **Cancellation token support:** Now properly passed end-to-end from chat participant → rewriter → API calls
-- **Timeout memory leak:** Fixed - timer now cleared on success/error
-- **Confidence floor removed:** Was artificially flooring at 30%, now shows real values
-- **Jest worker warning:** Fixed with proper test cleanup hooks
-
-### Removed Features
-- **Claude model option:** Removed misleading `preferredModel: "claude"` option (no actual Claude extension exists)
-
-### Code Quality
-- **Circular import hack removed:** `calculateConfidence` moved from `sharedPrompts.ts` to `qualityAnalyzer.ts` with proper static imports
-- **Long regex patterns extracted:** Framework and vague words patterns now use string concatenation to stay under line length limit
-- **Deleted empty `core 2/` directory**
-
----
-
-## v1.6.0 Changes (Previous)
-
-### Phase 1: Critical Fixes ✅
-- Fixed version mismatch (package.json now 1.6.0)
-- Fixed duplicate error message in chat participant
-- Removed dead icon.png reference
-
-### Phase 2: Intelligent Analyzer ✅
-**Problem solved:** "build a REST API with JWT auth" is no longer penalized for containing "build"
-
-**New Features:**
-- `calculateSpecificityScore()` in `core/analyzer.ts` - Measures how detailed a prompt is
-- Context-aware scoring: `finalScore = rawVagueness - (specificityScore * 0.8)`
-- `specificityScore` field added to `AnalysisResult`
-
-**Key behavior change:**
-- `"build something"` → score ~85 (vague, needs enhancement)
-- `"build a REST API with JWT authentication, rate limiting"` → score <30 (specific, skip enhancement)
-
-### Phase 3: Real Confidence Score ✅
-**Formula:**
-```
-confidence = (
-  specificityGain * 0.35 +    // How much more specific did it get?
-  actionability * 0.25 +      // Does it have clear actions/steps?
-  issueCoverage * 0.25 +      // Did it address the detected issues?
-  relevance * 0.15            // Did it stay on topic?
-)
-```
-
-### Phase 4: Async Handling ✅
-- Cancellation token support (fully working in v1.6.1)
-- 30-second timeout with proper cleanup
-- Comment explaining VS Code LM API limitation (system prompt as user message)
-
 ---
 
 ## Architecture
@@ -148,9 +130,11 @@ confidence = (
 ```
 User Prompt
     ↓
-[Vagueness Analysis] ← Scores prompt 0-100 + specificity score
+[ML Vagueness Analysis] ← NEW: TF-IDF + Logistic Regression (if trained)
     ↓
-[Specificity Offset] ← High specificity reduces vagueness score
+[Rule-Based Analysis] ← Scores prompt 0-100 + specificity score
+    ↓
+[Hybrid Score] ← 70% ML + 30% Rules (if ML confident)
     ↓
 [Threshold Check] ← Skip if score < 30
     ↓
@@ -158,7 +142,7 @@ User Prompt
     ↓
 [Context Detection] ← File, tech stack, selection, errors
     ↓
-[Cancellation Check] ← NEW in v1.7.0
+[Cancellation Check]
     ↓
 [AI Enhancement]
     ├─ GitHub Copilot (primary, supports cancellation)
@@ -171,13 +155,50 @@ Enhanced Prompt
 
 ---
 
+## ML System Details
+
+### Training Data Format:
+```json
+{
+  "prompt": "fix it",
+  "vaguenessScore": 90,
+  "intentCategory": "fix",
+  "missingElements": ["what", "where"],
+  "reasoning": "Very vague, no context"
+}
+```
+
+### Model Persistence:
+```typescript
+const service = MLVaguenessService.getInstance();
+service.trainModel(labeledPrompts);
+const json = service.exportModel();  // Save for bundling
+service.importModel(json);            // Load pre-trained
+```
+
+### Current Accuracy (100 samples):
+| Prompt Type | Score Range | Status |
+|-------------|-------------|--------|
+| Vague ("fix it") | 87-94 | ✅ Correct |
+| Medium ("fix the login bug") | 71-83 | ✅ Correct |
+| Specific (with file paths) | 65-70 | ⚠️ Needs more training data |
+
+---
+
 ## Quick Reference
 
 ```bash
 npm run compile   # Build
 npm run lint      # Lint
-npm test          # Run tests
+npm test          # Run tests (537 total)
 npm run watch     # Watch mode
 ```
 
 **Debug:** Press F5 in VS Code
+
+**Test ML:**
+```bash
+npm test -- --testPathPattern="testVagueness" --verbose
+```
+
+**Generate Training Data:** Run command `BetterPrompt: Generate Training Data (Dev)` in Extension Host
