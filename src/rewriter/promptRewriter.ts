@@ -170,13 +170,13 @@ export class PromptRewriter {
       if (this.preferredModel === 'groq') {
         logger.debug('User prefers Groq, using Groq API');
         if (this.groqRewriter) {
-          const rewrite = await this.groqRewriter.enhancePrompt(prompt, contextString, cancellationToken, analysis);
+          const rewrite = await this.groqRewriter.enhancePrompt(prompt, contextString, cancellationToken);
           rateLimiter.recordRequest(); // Record successful request
           promptCache.set(prompt, contextString, rewrite); // Cache the result
           logger.info('Prompt enhanced successfully via Groq');
           getTelemetry().record(TelemetryEvent.ENHANCEMENT_SUCCESS, {
             model: rewrite.model,
-            vaguenessScore: analysis.score,
+            analysisScore: analysis.score,
           });
           return {
             shouldRewrite: true,
@@ -200,13 +200,13 @@ export class PromptRewriter {
       if (vsCodeLmAvailable) {
         try {
           logger.debug('Attempting VS Code LM enhancement', { preferredModel: this.preferredModel });
-          const rewrite = await this.vscodeLmRewriter.enhancePrompt(prompt, contextString, cancellationToken, analysis);
+          const rewrite = await this.vscodeLmRewriter.enhancePrompt(prompt, contextString, cancellationToken);
           rateLimiter.recordRequest(); // Record successful request
           promptCache.set(prompt, contextString, rewrite); // Cache the result
           logger.info('Prompt enhanced successfully via VS Code LM');
           getTelemetry().record(TelemetryEvent.ENHANCEMENT_SUCCESS, {
             model: rewrite.model,
-            vaguenessScore: analysis.score,
+            analysisScore: analysis.score,
           });
           return {
             shouldRewrite: true,
@@ -214,8 +214,10 @@ export class PromptRewriter {
             rewrite,
             context,
           };
-        } catch (error) {
-          logger.warn('VS Code LM failed, falling back to Groq', error);
+        } catch (error: unknown) {
+          logger.warn('VS Code LM failed, falling back to Groq', {
+            error: error instanceof Error ? error.message : String(error),
+          });
         }
       } else {
         logger.debug('VS Code LM not available, will try Groq fallback');
@@ -224,13 +226,13 @@ export class PromptRewriter {
       // Step 6: Fallback to Groq API
       if (this.groqRewriter) {
         logger.debug('Using Groq API fallback');
-        const rewrite = await this.groqRewriter.enhancePrompt(prompt, contextString, cancellationToken, analysis);
+        const rewrite = await this.groqRewriter.enhancePrompt(prompt, contextString, cancellationToken);
         rateLimiter.recordRequest(); // Record successful request
         promptCache.set(prompt, contextString, rewrite); // Cache the result
         logger.info('Prompt enhanced successfully via Groq fallback');
         getTelemetry().record(TelemetryEvent.ENHANCEMENT_SUCCESS, {
           model: rewrite.model,
-          vaguenessScore: analysis.score,
+          analysisScore: analysis.score,
         });
         return {
           shouldRewrite: true,
@@ -248,8 +250,10 @@ export class PromptRewriter {
         error: 'No AI model available. Make sure GitHub Copilot is installed and active.',
         context,
       };
-    } catch (error) {
-      logger.error('Unexpected error in prompt processing', error);
+    } catch (error: unknown) {
+      logger.error('Unexpected error in prompt processing', {
+        error: error instanceof Error ? error.message : String(error),
+      });
       getTelemetry().record(TelemetryEvent.ENHANCEMENT_ERROR, {
         errorType: error instanceof Error ? error.constructor.name : 'unknown',
       });

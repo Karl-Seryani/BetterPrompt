@@ -191,9 +191,11 @@ export class HybridAnalyzer {
           ...llmResult,
           source: 'fallback',
         };
-      } catch (error) {
+      } catch (error: unknown) {
         // LLM failed, return ML result anyway
-        logger.warn('LLM fallback failed, using ML result', { error });
+        logger.warn('LLM fallback failed, using ML result', {
+          error: error instanceof Error ? error.message : String(error),
+        });
         return {
           score: mlResult.score,
           confidence: mlResult.confidence,

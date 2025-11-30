@@ -5,11 +5,9 @@
 
 import * as vscode from 'vscode';
 import { buildSystemPrompt, buildUserPrompt } from './sharedPrompts';
-import { calculateConfidenceAsync } from './qualityAnalyzer';
+import { getImprovements } from './qualityAnalyzer';
 import type { RewriteResult } from './types';
 import { formatUserError } from '../utils/errorHandler';
-import type { AnalysisResult } from '../../core/analyzer';
-import type { VaguenessAnalysisResult } from '../ml/vaguenessService';
 
 export interface GroqConfig {
   apiKey: string;
@@ -42,41 +40,39 @@ export class GroqRewriter {
   }
 
   /**
-   * Enhances a vague prompt using Groq AI
-   * @param vaguePrompt The original vague prompt
+   * Enhances a prompt using Groq AI
+   * @param prompt The original prompt
    * @param context Optional workspace context (current file, tech stack, etc.)
    * @param cancellationToken Optional token to cancel the request
-   * @param analysis Optional pre-computed analysis to avoid re-analyzing for confidence
-   * @returns Enhanced prompt with better context and clarity
+   * @returns Enhanced prompt with improvement breakdown
    */
   public async enhancePrompt(
-    vaguePrompt: string,
+    prompt: string,
     context?: string,
-    cancellationToken?: vscode.CancellationToken,
-    analysis?: AnalysisResult | VaguenessAnalysisResult
+    cancellationToken?: vscode.CancellationToken
   ): Promise<RewriteResult> {
-    if (!vaguePrompt || vaguePrompt.trim().length === 0) {
+    if (!prompt || prompt.trim().length === 0) {
       throw new Error('Prompt cannot be empty');
     }
 
     const systemPrompt = buildSystemPrompt();
-    const userPrompt = buildUserPrompt(vaguePrompt, context);
+    const userPrompt = buildUserPrompt(prompt, context);
 
     try {
       const response = await this.callGroqAPI(systemPrompt, userPrompt, cancellationToken);
       const enhanced = this.extractEnhancedPrompt(response);
 
-      // Calculate confidence using AI comparative scoring (with fallback to rules)
-      const confidence = await calculateConfidenceAsync(vaguePrompt, enhanced, analysis, cancellationToken);
+      // Get improvement breakdown
+      const improvements = getImprovements(prompt, enhanced);
 
       return {
-        original: vaguePrompt,
+        original: prompt,
         enhanced,
         model: this.config.model || DEFAULT_MODEL,
         tokensUsed: response.usage?.total_tokens,
-        confidence,
+        improvements,
       };
-    } catch (error) {
+    } catch (error: unknown) {
       // Use error handler to provide user-friendly message
       const userMessage = formatUserError(error);
       throw new Error(userMessage);
@@ -131,11 +127,11 @@ export class GroqRewriter {
       const data: unknown = await response.json();
       validateGroqResponse(data);
       return data;
-    } catch (error) {
+    } catch (error: unknown) {
       clearTimeout(timeout);
       cancellationListener?.dispose();
 
-      if ((error as Error).name === 'AbortError') {
+      if (error instanceof Error && error.name === 'AbortError') {
         // Check if it was user cancellation or timeout
         if (cancellationToken?.isCancellationRequested) {
           throw new Error('Request was cancelled');

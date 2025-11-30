@@ -1,10 +1,10 @@
 /**
  * Unit tests for Enhancement Quality Analyzer
- * Tests the REAL confidence scoring system (replaces fake math)
+ * Tests the improvement analysis system
  */
 
 import {
-  calculateEnhancementQuality,
+  analyzeEnhancementQuality,
   measureSpecificityGain,
   measureActionability,
   measureIssueCoverage,
@@ -117,7 +117,7 @@ describe('EnhancementQualityAnalyzer', () => {
   });
 
   describe('measureIssueCoverage', () => {
-    it('should return 0 when no issues were in original', () => {
+    it('should return 1 when no issues were in original', () => {
       const perfectPrompt =
         'In src/auth/login.ts, implement JWT validation with proper error handling';
       const originalAnalysis = analyzePrompt(perfectPrompt);
@@ -125,7 +125,7 @@ describe('EnhancementQualityAnalyzer', () => {
 
       const coverage = measureIssueCoverage(originalAnalysis, enhanced);
 
-      expect(coverage).toBe(0); // No issues to cover
+      expect(coverage).toBe(1); // No issues to cover = fully covered
     });
 
     it('should return positive when enhanced addresses vague verb issue', () => {
@@ -205,18 +205,20 @@ describe('EnhancementQualityAnalyzer', () => {
     });
   });
 
-  describe('calculateEnhancementQuality (composite score)', () => {
-    it('should return low confidence for poor enhancements', () => {
+  describe('analyzeEnhancementQuality (composite result)', () => {
+    it('should return false improvements for poor enhancements', () => {
       const original = 'make a login';
       const enhanced = 'make a login'; // No change
       const originalAnalysis = analyzePrompt(original);
 
-      const quality = calculateEnhancementQuality(original, enhanced, originalAnalysis);
+      const quality = analyzeEnhancementQuality(original, enhanced, originalAnalysis);
 
-      expect(quality.confidence).toBeLessThan(0.4);
+      // No improvement should be detected
+      expect(quality.improvements.addedSpecificity).toBe(false);
+      expect(quality.improvements.madeActionable).toBe(false);
     });
 
-    it('should return high confidence for good enhancements', () => {
+    it('should return true improvements for good enhancements', () => {
       const original = 'make a login';
       const enhanced = `Implement a login system in React:
 1. Create LoginForm component with email/password fields
@@ -229,9 +231,11 @@ Tech stack: React, TypeScript, Axios for API calls`;
 
       const originalAnalysis = analyzePrompt(original);
 
-      const quality = calculateEnhancementQuality(original, enhanced, originalAnalysis);
+      const quality = analyzeEnhancementQuality(original, enhanced, originalAnalysis);
 
-      expect(quality.confidence).toBeGreaterThan(0.7);
+      // Should detect multiple improvements
+      expect(quality.improvements.addedSpecificity).toBe(true);
+      expect(quality.improvements.madeActionable).toBe(true);
     });
 
     it('should break down quality into component scores', () => {
@@ -239,17 +243,17 @@ Tech stack: React, TypeScript, Axios for API calls`;
       const enhanced = 'Fix the NullPointerException in UserService.java line 42';
       const originalAnalysis = analyzePrompt(original);
 
-      const quality = calculateEnhancementQuality(original, enhanced, originalAnalysis);
+      const quality = analyzeEnhancementQuality(original, enhanced, originalAnalysis);
 
-      expect(quality).toHaveProperty('confidence');
-      expect(quality).toHaveProperty('specificityGain');
-      expect(quality).toHaveProperty('actionability');
-      expect(quality).toHaveProperty('issueCoverage');
-      expect(quality).toHaveProperty('relevance');
+      expect(quality).toHaveProperty('improvements');
+      expect(quality).toHaveProperty('scores');
+      expect(quality.scores).toHaveProperty('specificityGain');
+      expect(quality.scores).toHaveProperty('actionability');
+      expect(quality.scores).toHaveProperty('issueCoverage');
+      expect(quality.scores).toHaveProperty('relevance');
     });
 
-    it('should weight factors according to formula', () => {
-      // Weights: specificityGain 35%, actionability 25%, issueCoverage 25%, relevance 15%
+    it('should have improvements boolean and raw scores', () => {
       const original = 'make something';
       const enhanced = `Create a REST API:
 1. Set up Express.js server
@@ -258,19 +262,22 @@ Tech stack: React, TypeScript, Axios for API calls`;
 
       const originalAnalysis = analyzePrompt(original);
 
-      const quality = calculateEnhancementQuality(original, enhanced, originalAnalysis);
+      const quality = analyzeEnhancementQuality(original, enhanced, originalAnalysis);
 
-      // Verify the formula: confidence = spec*0.35 + action*0.25 + issue*0.25 + rel*0.15
-      const expectedConfidence =
-        quality.specificityGain * 0.35 +
-        quality.actionability * 0.25 +
-        quality.issueCoverage * 0.25 +
-        quality.relevance * 0.15;
+      // Check improvements are booleans
+      expect(typeof quality.improvements.addedSpecificity).toBe('boolean');
+      expect(typeof quality.improvements.madeActionable).toBe('boolean');
+      expect(typeof quality.improvements.addressedIssues).toBe('boolean');
+      expect(typeof quality.improvements.stayedOnTopic).toBe('boolean');
 
-      expect(quality.confidence).toBeCloseTo(expectedConfidence, 2);
+      // Check scores are numbers
+      expect(typeof quality.scores.specificityGain).toBe('number');
+      expect(typeof quality.scores.actionability).toBe('number');
+      expect(typeof quality.scores.issueCoverage).toBe('number');
+      expect(typeof quality.scores.relevance).toBe('number');
     });
 
-    it('should always return confidence between 0 and 1', () => {
+    it('should always return scores between 0 and 1', () => {
       const testCases = [
         { original: '', enhanced: '' },
         { original: 'help', enhanced: 'What do you need help with?' },
@@ -280,10 +287,16 @@ Tech stack: React, TypeScript, Axios for API calls`;
 
       for (const { original, enhanced } of testCases) {
         const analysis = analyzePrompt(original || 'help');
-        const quality = calculateEnhancementQuality(original, enhanced, analysis);
+        const quality = analyzeEnhancementQuality(original, enhanced, analysis);
 
-        expect(quality.confidence).toBeGreaterThanOrEqual(0);
-        expect(quality.confidence).toBeLessThanOrEqual(1);
+        expect(quality.scores.specificityGain).toBeGreaterThanOrEqual(0);
+        expect(quality.scores.specificityGain).toBeLessThanOrEqual(1);
+        expect(quality.scores.actionability).toBeGreaterThanOrEqual(0);
+        expect(quality.scores.actionability).toBeLessThanOrEqual(1);
+        expect(quality.scores.issueCoverage).toBeGreaterThanOrEqual(0);
+        expect(quality.scores.issueCoverage).toBeLessThanOrEqual(1);
+        expect(quality.scores.relevance).toBeGreaterThanOrEqual(0);
+        expect(quality.scores.relevance).toBeLessThanOrEqual(1);
       }
     });
   });

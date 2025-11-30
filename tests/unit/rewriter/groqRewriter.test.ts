@@ -30,7 +30,12 @@ jest.mock('../../../src/rewriter/sharedPrompts', () => ({
 
 // Mock qualityAnalyzer
 jest.mock('../../../src/rewriter/qualityAnalyzer', () => ({
-  calculateConfidenceAsync: jest.fn(() => Promise.resolve(0.85)),
+  getImprovements: jest.fn(() => ({
+    addedSpecificity: true,
+    madeActionable: true,
+    addressedIssues: true,
+    stayedOnTopic: true,
+  })),
 }));
 
 // Mock errorHandler
@@ -148,7 +153,12 @@ describe('GroqRewriter', () => {
         enhanced: 'Enhanced prompt: Create a responsive login page with email validation',
         model: 'llama-3.3-70b-versatile',
         tokensUsed: 150,
-        confidence: 0.85,
+        improvements: {
+          addedSpecificity: true,
+          madeActionable: true,
+          addressedIssues: true,
+          stayedOnTopic: true,
+        },
       });
     });
 
@@ -164,22 +174,16 @@ describe('GroqRewriter', () => {
       expect(buildUserPrompt).toHaveBeenCalledWith('make a login', 'React project with TypeScript');
     });
 
-    it('should pass pre-computed analysis to calculateConfidenceAsync', async () => {
+    it('should call getImprovements with original and enhanced prompts', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: () => Promise.resolve(mockValidResponse),
       });
 
-      const mockAnalysis = { score: 75, issues: [], specificityScore: 20 };
-      await rewriter.enhancePrompt('make a login', undefined, undefined, mockAnalysis as any);
+      await rewriter.enhancePrompt('make a login');
 
-      const { calculateConfidenceAsync } = require('../../../src/rewriter/qualityAnalyzer');
-      expect(calculateConfidenceAsync).toHaveBeenCalledWith(
-        'make a login',
-        expect.any(String),
-        mockAnalysis,
-        undefined // cancellation token
-      );
+      const { getImprovements } = require('../../../src/rewriter/qualityAnalyzer');
+      expect(getImprovements).toHaveBeenCalledWith('make a login', expect.any(String));
     });
 
     it('should remove surrounding double quotes from enhanced prompt', async () => {

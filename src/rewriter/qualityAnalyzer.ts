@@ -1,39 +1,35 @@
 /**
  * Enhancement Quality Analyzer
- * Measures REAL confidence based on actual enhancement quality
+ * Measures what improvements were made to a prompt
  *
  * Uses the `natural` NLP library for proper Porter stemming.
- *
- * Confidence weights are defined in core/constants.ts:
- * - CONFIDENCE_WEIGHT_SPECIFICITY_GAIN (default: 0.35) - How much more specific?
- * - CONFIDENCE_WEIGHT_ACTIONABILITY (default: 0.25) - Has clear actions/steps?
- * - CONFIDENCE_WEIGHT_ISSUE_COVERAGE (default: 0.25) - Addressed detected issues?
- * - CONFIDENCE_WEIGHT_RELEVANCE (default: 0.15) - Stayed on topic?
  */
 
-import * as vscode from 'vscode';
 import { PorterStemmer } from 'natural';
 import { calculateSpecificityScore, analyzePrompt, type AnalysisResult, IssueType } from '../../core/analyzer';
 import { ACTION_VERBS, TECH_OBJECTS, FRAMEWORK_PATTERN, VAGUE_WORDS_PATTERN, STOP_WORDS } from '../../core/patterns';
 import {
-  CONFIDENCE_WEIGHT_SPECIFICITY_GAIN,
-  CONFIDENCE_WEIGHT_ACTIONABILITY,
-  CONFIDENCE_WEIGHT_ISSUE_COVERAGE,
-  CONFIDENCE_WEIGHT_RELEVANCE,
   SPECIFICITY_GAIN_NORMALIZER,
+  IMPROVEMENT_SPECIFICITY_THRESHOLD,
+  IMPROVEMENT_ACTIONABILITY_THRESHOLD,
+  IMPROVEMENT_ISSUE_COVERAGE_THRESHOLD,
+  IMPROVEMENT_RELEVANCE_THRESHOLD,
 } from '../../core/constants';
-import { ComparativeScorer } from '../ml/comparativeScorer';
-import { logger } from '../utils/logger';
+import type { ImprovementBreakdown } from './types';
 
 /**
  * Result of quality analysis with component breakdown
  */
 export interface QualityResult {
-  confidence: number; // 0-1, overall quality score
-  specificityGain: number; // 0-1, how much specificity was added
-  actionability: number; // 0-1, how actionable is the enhanced prompt
-  issueCoverage: number; // 0-1, how well were detected issues addressed
-  relevance: number; // 0-1, how relevant is enhancement to original
+  /** What was improved (for display to users) */
+  improvements: ImprovementBreakdown;
+  /** Raw scores for internal use */
+  scores: {
+    specificityGain: number; // 0-1, how much specificity was added
+    actionability: number; // 0-1, how actionable is the enhanced prompt
+    issueCoverage: number; // 0-1, how well were detected issues addressed
+    relevance: number; // 0-1, how relevant is enhancement to original
+  };
 }
 
 /**
@@ -183,9 +179,9 @@ export function measureActionability(enhanced: string): number {
 export function measureIssueCoverage(originalAnalysis: AnalysisResult, enhanced: string): number {
   const issues = originalAnalysis.issues;
 
-  // No issues to cover = return 0 (not relevant metric)
+  // No issues to cover = return 1 (nothing to address, so fully covered)
   if (issues.length === 0) {
-    return 0;
+    return 1;
   }
 
   let coveredCount = 0;
@@ -277,111 +273,66 @@ export function measureRelevance(original: string, enhanced: string): number {
 }
 
 /**
- * Calculates the overall enhancement quality using weighted components
+ * Analyzes the quality of an enhancement and returns what was improved
  *
  * @param original Original prompt
  * @param enhanced Enhanced prompt
  * @param originalAnalysis Analysis of the original prompt
- * @returns Quality result with confidence and component scores
+ * @returns Quality result with improvements breakdown
  */
-export function calculateEnhancementQuality(
+export function analyzeEnhancementQuality(
   original: string,
   enhanced: string,
-  originalAnalysis: AnalysisResult
+  originalAnalysis?: AnalysisResult
 ): QualityResult {
   // Handle edge cases
   if (!original || !enhanced) {
     return {
-      confidence: 0,
-      specificityGain: 0,
-      actionability: 0,
-      issueCoverage: 0,
-      relevance: 0,
+      improvements: {
+        addedSpecificity: false,
+        madeActionable: false,
+        addressedIssues: false,
+        stayedOnTopic: false,
+      },
+      scores: {
+        specificityGain: 0,
+        actionability: 0,
+        issueCoverage: 0,
+        relevance: 0,
+      },
     };
   }
+
+  const analysis = originalAnalysis ?? analyzePrompt(original);
 
   // Calculate component scores
   const specificityGain = measureSpecificityGain(original, enhanced);
   const actionability = measureActionability(enhanced);
-  const issueCoverage = measureIssueCoverage(originalAnalysis, enhanced);
+  const issueCoverage = measureIssueCoverage(analysis, enhanced);
   const relevance = measureRelevance(original, enhanced);
 
-  // Weighted formula using configurable weights from constants
-  const confidence =
-    specificityGain * CONFIDENCE_WEIGHT_SPECIFICITY_GAIN +
-    actionability * CONFIDENCE_WEIGHT_ACTIONABILITY +
-    issueCoverage * CONFIDENCE_WEIGHT_ISSUE_COVERAGE +
-    relevance * CONFIDENCE_WEIGHT_RELEVANCE;
+  // Convert scores to boolean indicators
+  const improvements: ImprovementBreakdown = {
+    addedSpecificity: specificityGain >= IMPROVEMENT_SPECIFICITY_THRESHOLD,
+    madeActionable: actionability >= IMPROVEMENT_ACTIONABILITY_THRESHOLD,
+    addressedIssues: issueCoverage >= IMPROVEMENT_ISSUE_COVERAGE_THRESHOLD,
+    stayedOnTopic: relevance >= IMPROVEMENT_RELEVANCE_THRESHOLD,
+  };
 
   return {
-    confidence: Math.max(0, Math.min(confidence, 1)),
-    specificityGain,
-    actionability,
-    issueCoverage,
-    relevance,
+    improvements,
+    scores: {
+      specificityGain,
+      actionability,
+      issueCoverage,
+      relevance,
+    },
   };
 }
 
 /**
- * Calculates confidence score for the rewrite using rule-based analysis
- * Convenience wrapper around calculateEnhancementQuality
- *
- * @param original Original prompt
- * @param enhanced Enhanced prompt
- * @param existingAnalysis Optional pre-computed analysis to avoid re-analyzing
- * @returns Confidence score 0-1
+ * Get improvement breakdown for a rewrite result
  */
-export function calculateConfidence(original: string, enhanced: string, existingAnalysis?: AnalysisResult): number {
-  const analysis = existingAnalysis ?? analyzePrompt(original);
-  const quality = calculateEnhancementQuality(original, enhanced, analysis);
-
-  return quality.confidence;
-}
-
-// Singleton scorer instance (lazy initialized)
-let comparativeScorer: ComparativeScorer | null = null;
-
-function getComparativeScorer(): ComparativeScorer {
-  if (!comparativeScorer) {
-    comparativeScorer = new ComparativeScorer();
-  }
-  return comparativeScorer;
-}
-
-/**
- * Calculates confidence score using AI comparative scoring when available
- *
- * This function attempts to use Copilot to semantically compare the original
- * and enhanced prompts. If Copilot is unavailable or the comparison fails,
- * it falls back to the rule-based calculateConfidence.
- *
- * @param original Original prompt
- * @param enhanced Enhanced prompt
- * @param existingAnalysis Optional pre-computed analysis for fallback
- * @param cancellationToken Optional cancellation token
- * @returns Confidence score 0-1
- */
-export async function calculateConfidenceAsync(
-  original: string,
-  enhanced: string,
-  existingAnalysis?: AnalysisResult,
-  cancellationToken?: vscode.CancellationToken
-): Promise<number> {
-  // Try AI comparative scoring first
-  try {
-    const scorer = getComparativeScorer();
-    const aiConfidence = await scorer.getConfidence(original, enhanced, cancellationToken);
-
-    if (aiConfidence > 0) {
-      logger.debug(`AI confidence: ${(aiConfidence * 100).toFixed(1)}%`);
-      return aiConfidence;
-    }
-  } catch (error) {
-    logger.debug(`AI scoring failed, using rule-based: ${error instanceof Error ? error.message : String(error)}`);
-  }
-
-  // Fall back to rule-based scoring
-  const ruleConfidence = calculateConfidence(original, enhanced, existingAnalysis);
-  logger.debug(`Rule-based confidence: ${(ruleConfidence * 100).toFixed(1)}%`);
-  return ruleConfidence;
+export function getImprovements(original: string, enhanced: string): ImprovementBreakdown {
+  return analyzeEnhancementQuality(original, enhanced).improvements;
 }

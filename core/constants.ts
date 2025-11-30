@@ -167,3 +167,31 @@ export const CONFIDENCE_WEIGHT_RELEVANCE = 0.15;
  * A gain of this many points = maximum specificity improvement
  */
 export const SPECIFICITY_GAIN_NORMALIZER = 50;
+
+// ============================================================================
+// QUALITY ANALYSIS - IMPROVEMENT THRESHOLDS
+// ============================================================================
+
+/**
+ * Threshold for considering "added specificity" as an improvement
+ * Score >= this = specificity was meaningfully added (15%)
+ */
+export const IMPROVEMENT_SPECIFICITY_THRESHOLD = 0.15;
+
+/**
+ * Threshold for considering prompt "made actionable"
+ * Score >= this = prompt has clear actionable steps (30%)
+ */
+export const IMPROVEMENT_ACTIONABILITY_THRESHOLD = 0.3;
+
+/**
+ * Threshold for considering issues "addressed"
+ * Score >= this = detected issues were addressed (50%)
+ */
+export const IMPROVEMENT_ISSUE_COVERAGE_THRESHOLD = 0.5;
+
+/**
+ * Threshold for considering enhancement "stayed on topic"
+ * Score >= this = enhancement is relevant to original (50%)
+ */
+export const IMPROVEMENT_RELEVANCE_THRESHOLD = 0.5;

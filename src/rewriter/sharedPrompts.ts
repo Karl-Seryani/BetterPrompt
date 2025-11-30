@@ -25,7 +25,7 @@ export function buildSystemPrompt(): string {
   try {
     cachedSystemPrompt = fs.readFileSync(promptPath, 'utf-8');
     return cachedSystemPrompt;
-  } catch (error) {
+  } catch (error: unknown) {
     // Fallback error message if file not found (shouldn't happen in production)
     throw new Error(
       `Failed to load system prompt from ${promptPath}: ${error instanceof Error ? error.message : String(error)}`

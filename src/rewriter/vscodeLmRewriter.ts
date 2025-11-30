@@ -5,11 +5,9 @@
 
 import * as vscode from 'vscode';
 import { buildSystemPrompt, buildUserPrompt } from './sharedPrompts';
-import { calculateConfidenceAsync } from './qualityAnalyzer';
+import { getImprovements } from './qualityAnalyzer';
 import type { RewriteResult } from './types';
 import { formatUserError } from '../utils/errorHandler';
-import type { AnalysisResult } from '../../core/analyzer';
-import type { VaguenessAnalysisResult } from '../ml/vaguenessService';
 
 export interface VsCodeLmConfig {
   preferredModel?: 'auto' | 'gpt-4' | 'groq';
@@ -22,7 +20,7 @@ export async function isVsCodeLmAvailable(): Promise<boolean> {
   try {
     const models = await vscode.lm.selectChatModels();
     return models.length > 0;
-  } catch (error) {
+  } catch {
     return false;
   }
 }
@@ -38,20 +36,18 @@ export class VsCodeLmRewriter {
   }
 
   /**
-   * Enhances a vague prompt using VS Code Language Model API
-   * @param vaguePrompt The original vague prompt
+   * Enhances a prompt using VS Code Language Model API
+   * @param prompt The original prompt
    * @param context Optional workspace context (current file, tech stack, etc.)
    * @param cancellationToken Optional cancellation token for request cancellation
-   * @param analysis Optional pre-computed analysis to avoid re-analyzing for confidence
-   * @returns Enhanced prompt with better context and clarity
+   * @returns Enhanced prompt with improvement breakdown
    */
   public async enhancePrompt(
-    vaguePrompt: string,
+    prompt: string,
     context?: string,
-    cancellationToken?: vscode.CancellationToken,
-    analysis?: AnalysisResult | VaguenessAnalysisResult
+    cancellationToken?: vscode.CancellationToken
   ): Promise<RewriteResult> {
-    if (!vaguePrompt || vaguePrompt.trim().length === 0) {
+    if (!prompt || prompt.trim().length === 0) {
       throw new Error('Prompt cannot be empty');
     }
 
@@ -66,7 +62,7 @@ export class VsCodeLmRewriter {
     const model = this.selectModel(models);
 
     const systemPrompt = buildSystemPrompt();
-    const userPrompt = buildUserPrompt(vaguePrompt, context);
+    const userPrompt = buildUserPrompt(prompt, context);
 
     try {
       // NOTE: We send the system prompt as a User message because VS Code's
@@ -88,17 +84,17 @@ export class VsCodeLmRewriter {
 
       enhanced = this.cleanEnhancedPrompt(enhanced.trim());
 
-      // Calculate confidence using AI comparative scoring (with fallback to rules)
-      const confidence = await calculateConfidenceAsync(vaguePrompt, enhanced, analysis, token);
+      // Get improvement breakdown
+      const improvements = getImprovements(prompt, enhanced);
 
       return {
-        original: vaguePrompt,
+        original: prompt,
         enhanced,
         model: `${model.vendor}/${model.family}`,
         tokensUsed: undefined, // VS Code API doesn't expose token counts
-        confidence,
+        improvements,
       };
-    } catch (error) {
+    } catch (error: unknown) {
       // Use error handler to provide user-friendly message
       const userMessage = formatUserError(error);
       throw new Error(userMessage);

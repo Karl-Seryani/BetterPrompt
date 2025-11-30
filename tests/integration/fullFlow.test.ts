@@ -78,7 +78,12 @@ describe('Full Enhancement Flow', () => {
       original: 'test prompt',
       enhanced: 'Implement a comprehensive test suite with Jest covering unit and integration tests',
       model: 'llama-3.3-70b',
-      confidence: 0.85,
+      improvements: {
+        addedSpecificity: true,
+        madeActionable: true,
+        addressedIssues: true,
+        stayedOnTopic: true,
+      },
     });
   });
 
@@ -171,13 +176,8 @@ describe('Full Enhancement Flow', () => {
 
       await rewriter.processPrompt('make something', mockToken as any);
 
-      // Groq enhancePrompt should have been called with the token and analysis
-      expect(mockGroqEnhance).toHaveBeenCalledWith(
-        expect.any(String),
-        expect.any(String),
-        mockToken,
-        expect.objectContaining({ score: expect.any(Number) })
-      );
+      // Groq enhancePrompt should have been called with the token
+      expect(mockGroqEnhance).toHaveBeenCalledWith(expect.any(String), expect.any(String), mockToken);
     });
   });
 

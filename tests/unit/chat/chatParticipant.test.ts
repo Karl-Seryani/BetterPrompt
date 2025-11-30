@@ -162,15 +162,20 @@ describe('Chat Participant', () => {
           rewrite: {
             original: 'make a login',
             enhanced: 'Implement a user authentication system with email/password login',
-            confidence: 0.85,
             model: 'gpt-4',
+            improvements: {
+              addedSpecificity: true,
+              madeActionable: true,
+              addressedIssues: true,
+              stayedOnTopic: true,
+            },
           },
         }),
       };
       (PromptRewriter as jest.Mock).mockReturnValue(mockRewriterInstance);
     });
 
-    it('should show analysis and enhancement in review mode', async () => {
+    it('should show enhancement results in review mode', async () => {
       const mockRequest = {
         prompt: 'make a login',
         command: 'review',
@@ -178,8 +183,8 @@ describe('Chat Participant', () => {
 
       await chatHandler(mockRequest, {} as any, mockStream, mockToken);
 
-      expect(mockStream.markdown).toHaveBeenCalledWith(expect.stringContaining('## 📊 Analysis Results'));
-      expect(mockStream.markdown).toHaveBeenCalledWith(expect.stringContaining('**Vagueness Score:** 65/100'));
+      expect(mockStream.markdown).toHaveBeenCalledWith(expect.stringContaining('## 📊 Enhancement Results'));
+      expect(mockStream.markdown).toHaveBeenCalledWith(expect.stringContaining('What Was Improved'));
       expect(mockStream.markdown).toHaveBeenCalledWith(expect.stringContaining('## ✨ Enhanced Prompt'));
       expect(mockStream.markdown).toHaveBeenCalledWith(
         expect.stringContaining('Implement a user authentication system')
@@ -199,7 +204,7 @@ describe('Chat Participant', () => {
 
       await chatHandler(mockRequest, {} as any, mockStream, mockToken);
 
-      expect(mockStream.markdown).toHaveBeenCalledWith(expect.stringContaining('## 📊 Analysis Results'));
+      expect(mockStream.markdown).toHaveBeenCalledWith(expect.stringContaining('## 📊 Enhancement Results'));
     });
 
     it('should show model name used for enhancement', async () => {

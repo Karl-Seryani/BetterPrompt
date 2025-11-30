@@ -134,8 +134,8 @@ export class MLVaguenessService {
         finalLoss: result.finalLoss,
         vocabularySize: result.vocabularySize,
       };
-    } catch (error) {
-      logger.error('ML model training failed', error);
+    } catch (error: unknown) {
+      logger.error('ML model training failed', { error: error instanceof Error ? error.message : String(error) });
       this.mlAnalyzer = null;
       return {
         success: false,

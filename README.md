@@ -2,17 +2,17 @@
 
 **Supercharge your Copilot Chat with intelligent prompt enhancement**
 
-Type `@betterprompt` in GitHub Copilot Chat to transform vague prompts into detailed, actionable requests that get better AI responses.
+Type `@betterprompt` in GitHub Copilot Chat to transform simple prompts into detailed, actionable requests that get better AI responses.
 
-## ✨ Features
+## Features
 
-- 🧠 **Intelligent Enhancement** - Automatically understands your intent and adds the right details
-- 📁 **Context Aware** - Knows your current file, tech stack, and selected code
-- 💬 **Native Chat Integration** - Use `@betterprompt` directly in Copilot Chat
-- ⚡ **Instant Analysis** - Detects vagueness in <100ms
-- 🚀 **Zero Config** - Works immediately with your Copilot subscription
+- **Intelligent Enhancement** - Automatically understands your intent and adds the right details
+- **Context Aware** - Knows your current file, tech stack, and selected code
+- **Native Chat Integration** - Use `@betterprompt` directly in Copilot Chat
+- **Fast Analysis** - Analyzes prompts in <100ms
+- **Zero Config** - Works immediately with your Copilot subscription
 
-## 🎬 Quick Start
+## Quick Start
 
 ### In Copilot Chat (Recommended)
 
@@ -36,11 +36,11 @@ BetterPrompt analyzes and enhances your prompt, showing you the improved version
 @betterprompt /auto build an API
 ```
 
-## 📖 Examples
+## Examples
 
 ### Basic Enhancement
 
-**Your vague prompt:**
+**Your prompt:**
 ```
 @betterprompt make a login page
 ```
@@ -79,7 +79,7 @@ Should the loading state be managed internally or passed as a prop?
 
 **It knew you were in React without you having to say it!**
 
-## 🧠 How It Works
+## How It Works
 
 ### Intent Detection
 BetterPrompt detects what you're trying to do:
@@ -99,40 +99,39 @@ Automatically detects and includes:
 - Selected code in your editor
 - TypeScript/linter errors in your file
 
-## ⚙️ Configuration
+## Configuration
 
 Open Settings (`Cmd+,`) and search for "BetterPrompt":
 
 | Setting | Description | Default |
 |---------|-------------|---------|
 | `betterprompt.enabled` | Enable/disable extension | `true` |
-| `betterprompt.vaguenessThreshold` | Min vagueness score (0-100) | `30` |
+| `betterprompt.enhancementThreshold` | Min score (0-100) to trigger enhancement | `30` |
 | `betterprompt.chatMode` | Default chat mode (review/auto) | `review` |
 | `betterprompt.showDiff` | Show before/after diff | `true` |
-| `betterprompt.groqApiKey` | Groq API key (free fallback) | - |
 
-## 🔧 Commands
+## Commands
 
 | Command | Shortcut | Description |
 |---------|----------|-------------|
 | `BetterPrompt: Optimize Current Prompt` | `Cmd+Shift+E` | Enhance a prompt manually |
 | `BetterPrompt: Open Settings` | - | Quick access to settings |
 
-## 📋 Requirements
+## Requirements
 
 - **VS Code 1.85.0+**
 - **GitHub Copilot** subscription
 - **GitHub Copilot Chat** extension
 
-## 🆓 Free Fallback: Groq
+## Free Fallback: Groq
 
 If you hit your Copilot quota, BetterPrompt can use Groq (free):
 
 1. Get a free API key at [console.groq.com](https://console.groq.com)
-2. Add it to settings: `betterprompt.groqApiKey`
+2. Run command: `BetterPrompt: Set Groq API Key`
 3. BetterPrompt will automatically use it when Copilot isn't available
 
-## 🐛 Troubleshooting
+## Troubleshooting
 
 ### "@betterprompt" not appearing in chat?
 Make sure GitHub Copilot Chat extension is installed and you're signed in.
@@ -143,16 +142,16 @@ Make sure GitHub Copilot Chat extension is installed and you're signed in.
 3. Verify your Copilot subscription is active
 4. If quota exhausted, add a Groq API key (free)
 
-## 🔐 Privacy
+## Privacy
 
-- **Local analysis** - Vagueness detection runs on your machine
-- **No telemetry** - Zero tracking
+- **Local analysis** - Prompt analysis runs on your machine
+- **No telemetry** - Zero tracking by default
 - **Uses Copilot** - Enhancement uses your existing Copilot subscription (or Groq)
 
-## 📝 License
+## License
 
 MIT License
 
 ---
 
-**Made with ❤️ for better Copilot interactions**
+**Made with care for better Copilot interactions**

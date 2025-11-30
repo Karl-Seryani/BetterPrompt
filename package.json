@@ -1,7 +1,7 @@
 {
   "name": "betterprompt",
   "displayName": "BetterPrompt",
-  "description": "AI-powered prompt enhancement for GitHub Copilot - analyze and improve vague prompts automatically",
+  "description": "AI-powered prompt enhancement for GitHub Copilot - transform simple prompts into detailed, actionable requests",
   "version": "1.7.0",
   "publisher": "karl-seryani",
   "engines": {
@@ -85,12 +85,12 @@
           "default": true,
           "description": "Enable/disable BetterPrompt prompt optimization"
         },
-        "betterprompt.vaguenessThreshold": {
+        "betterprompt.enhancementThreshold": {
           "type": "number",
           "default": 30,
           "minimum": 0,
           "maximum": 100,
-          "description": "Minimum vagueness score (0-100) to trigger prompt rewriting"
+          "description": "Minimum score (0-100) to trigger prompt enhancement. Lower = enhance more prompts."
         },
         "betterprompt.autoOptimize": {
           "type": "boolean",

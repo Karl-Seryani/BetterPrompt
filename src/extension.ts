@@ -19,14 +19,21 @@ export function activate(context: vscode.ExtensionContext): void {
   const secretStorage = initializeSecretStorage(context);
 
   // Migrate API key from old settings to secure storage (one-time migration)
-  void secretStorage.migrateFromSettings().then((migrated) => {
-    if (migrated) {
-      logger.info('Migrated Groq API key from settings to secure storage');
-      void vscode.window.showInformationMessage(
-        'BetterPrompt: Your Groq API key has been migrated to secure storage for better security.'
-      );
-    }
-  });
+  secretStorage
+    .migrateFromSettings()
+    .then((migrated) => {
+      if (migrated) {
+        logger.info('Migrated Groq API key from settings to secure storage');
+        void vscode.window.showInformationMessage(
+          'BetterPrompt: Your Groq API key has been migrated to secure storage for better security.'
+        );
+      }
+    })
+    .catch((error: unknown) => {
+      logger.error('Failed to migrate API key to secure storage', {
+        error: error instanceof Error ? error.message : String(error),
+      });
+    });
 
   // Initialize rate limiter with proper lifecycle management
   initializeRateLimiter(context);
@@ -114,7 +121,8 @@ async function handleOptimizePrompt(context: vscode.ExtensionContext): Promise<v
 
       try {
         // Initialize rewriter
-        const threshold = config.get<number>('vaguenessThreshold', 30);
+        // Support both old and new setting names for backwards compatibility
+        const threshold = config.get<number>('enhancementThreshold') ?? config.get<number>('vaguenessThreshold', 30);
         const preferredModel = config.get<string>('preferredModel', 'auto') as 'auto' | 'gpt-4' | 'groq';
         const rewriter = new PromptRewriter({
           groqApiKey,
@@ -124,7 +132,7 @@ async function handleOptimizePrompt(context: vscode.ExtensionContext): Promise<v
 
         // Process the prompt
         return await rewriter.processPrompt(userPrompt);
-      } catch (error) {
+      } catch (error: unknown) {
         void vscode.window.showErrorMessage(
           `BetterPrompt Error: ${error instanceof Error ? error.message : String(error)}`
         );
@@ -144,21 +152,21 @@ async function handleOptimizePrompt(context: vscode.ExtensionContext): Promise<v
   }
 
   if (result.skipped) {
-    void vscode.window.showInformationMessage(
-      `Your prompt looks good! (Vagueness score: ${result.analysis.score}/100)`
-    );
+    void vscode.window.showInformationMessage('Your prompt looks good! No enhancement needed.');
     return;
   }
 
   // If we have a rewrite, show it
   if (result.rewrite) {
-    const { analysis, rewrite } = result;
-    const vaguenessScore = analysis.score;
-    const confidencePercent = Math.round(rewrite.confidence * 100);
+    const { rewrite } = result;
     const enhancedPrompt = rewrite.enhanced;
 
+    // Count improvements
+    const improvementCount = Object.values(rewrite.improvements).filter(Boolean).length;
+    const improvementText = improvementCount > 0 ? `${improvementCount} improvements made` : 'Refined';
+
     const choice = await vscode.window.showInformationMessage(
-      `BetterPrompt improved your prompt!\n\nModel: ${rewrite.model}\nVagueness Score: ${vaguenessScore}/100\nConfidence: ${confidencePercent}%`,
+      `BetterPrompt enhanced your prompt!\n\nModel: ${rewrite.model}\n${improvementText}`,
       'View Changes',
       'Copy Enhanced',
       'Dismiss'

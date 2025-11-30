@@ -17,7 +17,12 @@ describe('PromptCache', () => {
     original: 'test prompt',
     enhanced,
     model: 'test-model',
-    confidence: 0.85,
+    improvements: {
+      addedSpecificity: true,
+      madeActionable: true,
+      addressedIssues: false,
+      stayedOnTopic: true,
+    },
   });
 
   describe('get and set', () => {

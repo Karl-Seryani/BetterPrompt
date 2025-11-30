@@ -157,8 +157,11 @@ export function parseComparisonResponse(response: string): ComparisonResult | nu
       relevance: clampScore(parsed.relevance),
       reasoning: parsed.reasoning,
     };
-  } catch (error) {
-    logger.warn('Failed to parse comparison response', { error, response });
+  } catch (error: unknown) {
+    logger.warn('Failed to parse comparison response', {
+      error: error instanceof Error ? error.message : String(error),
+      response,
+    });
     return null;
   }
 }
@@ -230,8 +233,8 @@ export class ComparativeScorer {
       }
 
       return result;
-    } catch (error) {
-      logger.warn('AI comparison failed', { error });
+    } catch (error: unknown) {
+      logger.warn('AI comparison failed', { error: error instanceof Error ? error.message : String(error) });
       return null;
     }
   }

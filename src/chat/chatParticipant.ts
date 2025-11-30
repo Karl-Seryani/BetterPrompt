@@ -8,12 +8,40 @@ import { PromptRewriter, RewriteOptions } from '../rewriter/promptRewriter';
 import { ENHANCEMENT_TIMEOUT_MS } from '../../core/constants';
 import { getSecretStorage } from '../utils/secretStorage';
 import { handleTemplateCommand } from '../templates/templateHandler';
+import type { ImprovementBreakdown } from '../rewriter/types';
 
 export interface ChatParticipantConfig {
   groqApiKey?: string;
   preferredModel: 'auto' | 'gpt-4' | 'groq';
-  vaguenessThreshold: number;
+  threshold: number;
   chatMode: 'review' | 'auto';
+}
+
+/**
+ * Formats improvement breakdown as markdown checkmarks
+ */
+function formatImprovements(improvements: ImprovementBreakdown): string {
+  const lines: string[] = [];
+
+  if (improvements.addedSpecificity) {
+    lines.push('- ✓ Added specificity (file paths, technical terms)');
+  }
+  if (improvements.madeActionable) {
+    lines.push('- ✓ Made actionable (clear steps)');
+  }
+  if (improvements.addressedIssues) {
+    lines.push('- ✓ Addressed unclear language');
+  }
+  if (improvements.stayedOnTopic) {
+    lines.push('- ✓ Stayed on topic');
+  }
+
+  // If nothing was improved, show a note
+  if (lines.length === 0) {
+    lines.push('- Minor refinements applied');
+  }
+
+  return lines.join('\n');
 }
 
 /**
@@ -32,7 +60,8 @@ export function registerChatParticipant(context: vscode.ExtensionContext): void 
         const chatConfig: ChatParticipantConfig = {
           groqApiKey,
           preferredModel: config.get<string>('preferredModel', 'auto') as 'auto' | 'gpt-4' | 'groq',
-          vaguenessThreshold: config.get<number>('vaguenessThreshold', 30),
+          // Support both old and new setting names for backwards compatibility
+          threshold: config.get<number>('enhancementThreshold') ?? config.get<number>('vaguenessThreshold', 30),
           chatMode: config.get<string>('chatMode', 'review') as 'review' | 'auto',
         };
 
@@ -61,7 +90,7 @@ export function registerChatParticipant(context: vscode.ExtensionContext): void 
         // Initialize rewriter
         const rewriterOptions: RewriteOptions = {
           groqApiKey: chatConfig.groqApiKey,
-          threshold: chatConfig.vaguenessThreshold,
+          threshold: chatConfig.threshold,
           preferredModel: chatConfig.preferredModel,
         };
 
@@ -120,30 +149,21 @@ export function registerChatParticipant(context: vscode.ExtensionContext): void 
         // Handle skipped (prompt already good)
         if (result.skipped) {
           stream.markdown(`✅ **Your prompt looks great!**\n\n`);
-          stream.markdown(`Vagueness Score: **${result.analysis.score}/100** (below threshold)\n\n`);
           stream.markdown('No enhancement needed. You can use it as-is!');
           return;
         }
 
         // Handle successful enhancement
         if (result.rewrite) {
-          const { analysis, rewrite } = result;
+          const { rewrite } = result;
 
           // Mode 1: Review Mode (Show enhancement)
           if (mode === 'review') {
-            stream.markdown(`## 📊 Analysis Results\n\n`);
-            stream.markdown(`- **Vagueness Score:** ${analysis.score}/100\n`);
-            stream.markdown(`- **Analysis Source:** ${analysis.source}\n`);
-            stream.markdown(`- **Enhancement Model:** ${rewrite.model}\n`);
-            stream.markdown(`- **Confidence:** ${Math.round(rewrite.confidence * 100)}%\n\n`);
+            stream.markdown(`## 📊 Enhancement Results\n\n`);
+            stream.markdown(`**Model:** ${rewrite.model}\n\n`);
 
-            if (analysis.issues.length > 0) {
-              stream.markdown(`### Issues Detected:\n`);
-              analysis.issues.forEach((issue, index) => {
-                stream.markdown(`${index + 1}. **${issue.type}**: ${issue.description}\n`);
-              });
-              stream.markdown(`\n`);
-            }
+            stream.markdown(`### What Was Improved:\n`);
+            stream.markdown(formatImprovements(rewrite.improvements) + '\n\n');
 
             stream.markdown(`---\n\n`);
             stream.markdown(`## 🎯 Original Prompt\n\n`);
@@ -187,12 +207,10 @@ export function registerChatParticipant(context: vscode.ExtensionContext): void 
 
             // Add footer showing it was enhanced
             stream.markdown(`\n\n---\n`);
-            stream.markdown(
-              `_✨ Prompt enhanced by BetterPrompt (${analysis.score}/100 vagueness) using ${rewrite.model}_`
-            );
+            stream.markdown(`_✨ Prompt enhanced by BetterPrompt using ${rewrite.model}_`);
           }
         }
-      } catch (error) {
+      } catch (error: unknown) {
         stream.markdown(`❌ **Error:** ${error instanceof Error ? error.message : String(error)}`);
       }
     }

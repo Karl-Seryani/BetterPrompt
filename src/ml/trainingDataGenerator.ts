@@ -39,9 +39,9 @@ export interface GenerationConfig {
 }
 
 const DEFAULT_CONFIG: GenerationConfig = {
-  targetCount: 1000,
-  batchSize: 5,
-  delayBetweenBatches: 1000, // 1 second between batches to avoid rate limits
+  targetCount: 20000,
+  batchSize: 20,
+  delayBetweenBatches: 250, // 0.25 second between batches - aggressive but within limits
   outputPath: 'data/training/labeled-prompts.json',
 };
 
@@ -166,7 +166,6 @@ const PROMPT_TEMPLATES = {
     'Implement infinite scroll for comments with 20 items per page and loading skeleton',
     'Add WebSocket connection for real-time notifications with automatic reconnection',
     'Create GitHub Actions CI/CD pipeline with test, lint, build, and deploy stages',
-    // More specific prompts
     'Fix the TypeError "Cannot read property map of undefined" in ProductList.tsx line 23 when products array is empty',
     'Add a loading spinner to the fetchUsers function in src/api/users.ts that shows during the 2 second API call',
     'Implement optimistic updates for the toggleTodo function in TodoContext - update UI immediately then sync with server',
@@ -193,6 +192,60 @@ const PROMPT_TEMPLATES = {
     'Fix the "Hydration failed because the initial UI does not match what was rendered on the server" in next.js app',
     'Debug why the useEffect dependency array warning suggests adding "user" but adding it causes infinite loop',
     'Fix the TypeScript error "Type string is not assignable to type number" on line 34 of api/handlers.ts',
+    // Component-specific templates (will be expanded with {component})
+    'Fix the null pointer error in src/{component}/{component}.tsx on line 23 by adding optional chaining',
+    'Add unit tests for {component} component covering: render, click handlers, loading state, error state',
+    'Refactor {component} to use React.memo and useCallback for performance optimization',
+    'Implement error boundary wrapper for {component} with fallback UI and error logging',
+    'Add TypeScript strict types to {component} props interface with JSDoc documentation',
+    'Fix the useEffect dependency warning in {component} by extracting callback to useCallback',
+    'Add accessibility attributes (aria-label, role, tabIndex) to {component} for screen readers',
+    'Implement loading skeleton for {component} that matches the final layout dimensions',
+    'Add Storybook stories for {component} covering: default, loading, error, empty states',
+    'Fix the CSS-in-JS performance issue in {component} by moving styles outside component',
+    'Add integration tests for {component} using React Testing Library with user-event',
+    'Implement keyboard navigation for {component} with arrow keys and Enter/Space handlers',
+    'Add PropTypes validation to {component} as fallback for non-TypeScript consumers',
+    'Fix the z-index stacking issue in {component} by using CSS custom properties',
+    'Add responsive breakpoints to {component} for mobile (320px), tablet (768px), desktop (1024px)',
+    // Backend specific templates
+    'Add input validation to POST /api/{component} endpoint using zod schema with error messages',
+    'Implement caching for GET /api/{component} with 5-minute TTL and cache invalidation on write',
+    'Add rate limiting to /api/{component}/* routes with 100 requests per minute per user',
+    'Create database migration to add indexes on {component} table for query optimization',
+    'Implement soft delete for {component} model with deletedAt timestamp and restore endpoint',
+    'Add audit logging to {component} service for create, update, delete operations',
+    'Implement pagination for GET /api/{component} with cursor-based navigation and total count',
+    'Add webhook endpoint for {component} events with signature verification and retry logic',
+    'Create background job for {component} data sync with progress tracking and error handling',
+    'Implement search endpoint for {component} with full-text search and filters',
+    // Error fixing templates
+    'Fix the 500 error on POST /api/{component} caused by missing database connection pooling',
+    'Resolve the CORS error on {component} API by adding proper headers and preflight handling',
+    'Fix the memory leak in {component} service caused by unclosed database connections',
+    'Debug the slow query in {component} repository by adding database index on foreign key',
+    'Fix the race condition in {component} update by implementing optimistic locking',
+    // More specific standalone prompts
+    'Create a custom ESLint rule to enforce consistent import ordering in the codebase',
+    'Add Husky pre-commit hook that runs lint-staged on modified TypeScript files only',
+    'Implement feature flags using LaunchDarkly SDK with React context provider',
+    'Add Sentry error tracking with custom tags for user ID, environment, and release version',
+    'Create a custom Webpack plugin to generate build manifest with chunk hashes',
+    'Implement A/B testing framework with experiment assignment and analytics tracking',
+    'Add OpenTelemetry tracing to all API endpoints with custom span attributes',
+    'Create database seeding script for development with realistic fake data using Faker.js',
+    'Implement GraphQL subscriptions for real-time updates using Apollo Server',
+    'Add end-to-end tests using Playwright covering: login flow, checkout, profile update',
+    'Create a custom React hook useIntersectionObserver for lazy loading images',
+    'Implement service worker for offline support with cache-first strategy for assets',
+    'Add Content Security Policy headers to Next.js config with nonce for inline scripts',
+    'Create API documentation using OpenAPI 3.0 spec with request/response examples',
+    'Implement database connection pooling with PgBouncer for PostgreSQL',
+    'Add Redis session store for horizontal scaling across multiple server instances',
+    'Create a CLI tool for database migrations with up, down, and seed commands',
+    'Implement request signing for API authentication using HMAC-SHA256',
+    'Add structured logging with correlation IDs for distributed tracing',
+    'Create health check endpoint that verifies database, Redis, and external API connectivity',
   ],
 };
 
@@ -282,9 +335,15 @@ export function generateAllPrompts(): string[] {
     }
   }
 
-  // Add specific prompts
-  for (const prompt of PROMPT_TEMPLATES.specific) {
-    prompts.add(prompt);
+  // Add specific prompts with component variations
+  for (const template of PROMPT_TEMPLATES.specific) {
+    if (template.includes('{component}')) {
+      for (const component of COMPONENTS) {
+        prompts.add(template.replace('{component}', component));
+      }
+    } else {
+      prompts.add(template);
+    }
   }
 
   return shuffleArray(Array.from(prompts));
@@ -547,12 +606,12 @@ export function registerTrainingDataCommand(context: vscode.ExtensionContext): v
 
     // Ask for target count
     const countInput = await vscode.window.showInputBox({
-      prompt: 'How many labeled prompts to generate?',
-      value: '100',
+      prompt: 'How many labeled prompts to generate? (Recommended: 10000+ for production-grade model)',
+      value: '15000',
       validateInput: (value) => {
         const num = parseInt(value, 10);
-        if (isNaN(num) || num < 10 || num > 5000) {
-          return 'Enter a number between 10 and 5000';
+        if (isNaN(num) || num < 10 || num > 50000) {
+          return 'Enter a number between 10 and 50000';
         }
         return null;
       },
