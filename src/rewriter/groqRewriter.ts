@@ -8,6 +8,7 @@ import { buildSystemPrompt, buildUserPrompt } from './sharedPrompts';
 import { getImprovements } from './qualityAnalyzer';
 import type { RewriteResult } from './types';
 import { formatUserError } from '../utils/errorHandler';
+import { ENHANCEMENT_TIMEOUT_MS } from '../../core/constants';
 
 export interface GroqConfig {
   apiKey: string;
@@ -88,7 +89,7 @@ export class GroqRewriter {
     cancellationToken?: vscode.CancellationToken
   ): Promise<GroqResponse> {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+    const timeout = setTimeout(() => controller.abort(), ENHANCEMENT_TIMEOUT_MS);
 
     // Listen for VS Code cancellation and abort the fetch
     const cancellationListener = cancellationToken?.onCancellationRequested(() => {
@@ -136,7 +137,7 @@ export class GroqRewriter {
         if (cancellationToken?.isCancellationRequested) {
           throw new Error('Request was cancelled');
         }
-        throw new Error('Groq API request timed out after 30 seconds. Please try again.');
+        throw new Error(`Groq API request timed out after ${ENHANCEMENT_TIMEOUT_MS / 1000} seconds. Please try again.`);
       }
       throw error;
     }

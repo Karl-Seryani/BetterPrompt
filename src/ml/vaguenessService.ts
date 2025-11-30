@@ -9,7 +9,12 @@
  */
 
 import { analyzePrompt, AnalysisResult, VaguenessIssue } from '../../core/analyzer';
-import { DEFAULT_VAGUENESS_THRESHOLD } from '../../core/constants';
+import {
+  DEFAULT_VAGUENESS_THRESHOLD,
+  RULE_BASED_DEFAULT_CONFIDENCE,
+  ML_CONFIDENCE_THRESHOLD,
+  ML_SCORE_WEIGHT,
+} from '../../core/constants';
 import { MLAnalyzer, MLModelJSON, MLTrainingResult } from './mlAnalyzer';
 import { LabeledPrompt } from './trainingDataGenerator';
 import { logger } from '../utils/logger';
@@ -51,17 +56,11 @@ export interface TrainingResult {
 }
 
 // ============================================================================
-// CONFIGURATION
+// DERIVED CONSTANTS
 // ============================================================================
 
-/** Default confidence threshold for using ML score */
-const ML_CONFIDENCE_THRESHOLD = 0.6;
-
-/** Weight for ML score when combining with rule-based (0-1) */
-const ML_SCORE_WEIGHT = 0.7;
-
-/** Weight for rule-based score when combining (0-1) */
-const RULES_SCORE_WEIGHT = 0.3;
+/** Weight for rule-based score when combining (derived from ML weight) */
+const RULES_SCORE_WEIGHT = 1 - ML_SCORE_WEIGHT;
 
 // ============================================================================
 // ML VAGUENESS SERVICE
@@ -212,7 +211,7 @@ export class MLVaguenessService {
         score: rulesResult.score,
         isVague: rulesResult.score >= this.threshold,
         source: 'rules',
-        confidence: 0.7, // Rule-based has moderate confidence
+        confidence: RULE_BASED_DEFAULT_CONFIDENCE,
         issues: rulesResult.issues,
         hasVagueVerb: rulesResult.hasVagueVerb,
         hasMissingContext: rulesResult.hasMissingContext,

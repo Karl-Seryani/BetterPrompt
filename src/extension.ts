@@ -7,6 +7,29 @@ import { initializeTelemetry } from './utils/telemetry';
 import { initializeSecretStorage, getSecretStorage } from './utils/secretStorage';
 import { registerTrainingDataCommand } from './ml/trainingDataGenerator';
 
+// Module-level state for diff content provider (registered once)
+let diffContentProvider: DiffContentProvider | null = null;
+
+/**
+ * Content provider for diff view - stores current diff content
+ */
+class DiffContentProvider implements vscode.TextDocumentContentProvider {
+  private originalContent = '';
+  private enhancedContent = '';
+
+  setContent(original: string, enhanced: string): void {
+    this.originalContent = original;
+    this.enhancedContent = enhanced;
+  }
+
+  provideTextDocumentContent(uri: vscode.Uri): string {
+    if (uri.path === 'original.txt') {
+      return this.originalContent;
+    }
+    return this.enhancedContent;
+  }
+}
+
 /**
  * Extension activation entry point
  * Called when the extension is first activated
@@ -65,6 +88,10 @@ export function activate(context: vscode.ExtensionContext): void {
   // Add all commands to subscriptions for proper cleanup
   context.subscriptions.push(optimizePromptCommand, showSettingsCommand, resetOnboardingCommand, setGroqApiKeyCommand);
 
+  // Register diff content provider once (reused for all diff views)
+  diffContentProvider = new DiffContentProvider();
+  context.subscriptions.push(vscode.workspace.registerTextDocumentContentProvider('betterprompt', diffContentProvider));
+
   // Register chat participant for @betterprompt in VS Code chat
   registerChatParticipant(context);
 
@@ -80,7 +107,8 @@ export function activate(context: vscode.ExtensionContext): void {
  * Called when the extension is deactivated
  */
 export function deactivate(): void {
-  // Cleanup will happen here (close DB connections, etc.)
+  // Reset module-level state
+  diffContentProvider = null;
 }
 
 /**
@@ -184,21 +212,17 @@ async function handleOptimizePrompt(context: vscode.ExtensionContext): Promise<v
 /**
  * Shows a diff view comparing original and enhanced prompts
  */
-async function showDiff(context: vscode.ExtensionContext, original: string, enhanced: string): Promise<void> {
-  const originalUri = vscode.Uri.parse('betterprompt:original.txt');
-  const enhancedUri = vscode.Uri.parse('betterprompt:enhanced.txt');
+async function showDiff(_context: vscode.ExtensionContext, original: string, enhanced: string): Promise<void> {
+  if (!diffContentProvider) {
+    logger.error('Diff content provider not initialized');
+    return;
+  }
 
-  // Register text document content provider
-  const provider = new (class implements vscode.TextDocumentContentProvider {
-    provideTextDocumentContent(uri: vscode.Uri): string {
-      if (uri.toString() === originalUri.toString()) {
-        return original;
-      }
-      return enhanced;
-    }
-  })();
+  // Update the provider with new content
+  diffContentProvider.setContent(original, enhanced);
 
-  context.subscriptions.push(vscode.workspace.registerTextDocumentContentProvider('betterprompt', provider));
+  const originalUri = vscode.Uri.parse('betterprompt:/original.txt');
+  const enhancedUri = vscode.Uri.parse('betterprompt:/enhanced.txt');
 
   // Open diff view
   await vscode.commands.executeCommand('vscode.diff', originalUri, enhancedUri, 'BetterPrompt: Original ↔ Enhanced');

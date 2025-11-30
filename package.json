@@ -2,7 +2,7 @@
   "name": "betterprompt",
   "displayName": "BetterPrompt",
   "description": "AI-powered prompt enhancement for GitHub Copilot - transform simple prompts into detailed, actionable requests",
-  "version": "1.7.0",
+  "version": "1.8.0",
   "publisher": "karl-seryani",
   "engines": {
     "vscode": "^1.85.0"

@@ -195,3 +195,25 @@ export const IMPROVEMENT_ISSUE_COVERAGE_THRESHOLD = 0.5;
  * Score >= this = enhancement is relevant to original (50%)
  */
 export const IMPROVEMENT_RELEVANCE_THRESHOLD = 0.5;
+
+// ============================================================================
+// ML ANALYSIS
+// ============================================================================
+
+/**
+ * Default confidence for rule-based analysis when ML is not available
+ * Range: 0-1 (0.7 = 70% confidence)
+ */
+export const RULE_BASED_DEFAULT_CONFIDENCE = 0.7;
+
+/**
+ * Minimum ML confidence to use ML score over rules
+ * Below this threshold, falls back to rule-based analysis
+ */
+export const ML_CONFIDENCE_THRESHOLD = 0.6;
+
+/**
+ * Weight given to ML score in hybrid scoring (ML + rules)
+ * Range: 0-1 (0.7 = 70% ML, 30% rules)
+ */
+export const ML_SCORE_WEIGHT = 0.7;
