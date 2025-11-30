@@ -245,17 +245,11 @@ export function formatUserError(error: unknown): string {
   switch (categorized.category) {
     case ErrorCategory.QUOTA_EXCEEDED:
       return (
-        'GitHub Copilot quota exceeded. ' +
-        'Add a free Groq API key in settings to continue using BetterPrompt. ' +
-        'Get your key at: https://console.groq.com'
+        'Rate limit exceeded. ' + 'GitHub Copilot quota may be exhausted. ' + 'Please wait a moment and try again.'
       );
 
     case ErrorCategory.AUTH_FAILED:
-      return (
-        'Authentication failed. ' +
-        'Please check your API key in BetterPrompt settings. ' +
-        'If using Groq, get a free API key at https://console.groq.com'
-      );
+      return 'Authentication failed. ' + 'Please make sure you are signed in to GitHub Copilot.';
 
     case ErrorCategory.NETWORK_ERROR:
       return (
@@ -272,11 +266,7 @@ export function formatUserError(error: unknown): string {
       );
 
     case ErrorCategory.MODEL_UNAVAILABLE:
-      return (
-        'AI model not available. ' +
-        'Make sure GitHub Copilot is installed and active. ' +
-        'Alternatively, configure a Groq API key in settings as a fallback.'
-      );
+      return 'AI model not available. ' + 'Make sure GitHub Copilot is installed and active.';
 
     case ErrorCategory.PERMISSION_DENIED:
       return (

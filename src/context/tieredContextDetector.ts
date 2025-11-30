@@ -19,7 +19,6 @@ import {
   hasSemanticConsent,
   type SemanticContext,
 } from './semanticContext';
-import { logger } from '../utils/logger';
 
 // ============================================================================
 // TYPES
@@ -130,8 +129,6 @@ export async function detectTieredContext(options: TieredContextOptions = {}): P
 
   // Combine and format all contexts
   const formatted = formatAllTiers(basic, structural, semantic);
-
-  logger.debug('Tiered context detection complete', { tiersUsed });
 
   return {
     basic,

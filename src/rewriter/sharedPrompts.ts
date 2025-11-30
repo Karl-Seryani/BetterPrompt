@@ -19,8 +19,9 @@ export function buildSystemPrompt(): string {
     return cachedSystemPrompt;
   }
 
-  // Load from external file - path relative to compiled JS in dist/
-  const promptPath = path.join(__dirname, '../../core/prompts/enhancement-system.txt');
+  // When bundled with webpack, files are copied to dist/core/prompts/
+  // __dirname points to the dist folder, so we need core/prompts/ relative to it
+  const promptPath = path.join(__dirname, 'core/prompts/enhancement-system.txt');
 
   try {
     cachedSystemPrompt = fs.readFileSync(promptPath, 'utf-8');
@@ -55,6 +56,3 @@ USER PROMPT:
   }
   return `"${vaguePrompt}"`;
 }
-
-// NOTE: calculateConfidence has been moved to qualityAnalyzer.ts
-// Import it from there: import { calculateConfidence } from './qualityAnalyzer';

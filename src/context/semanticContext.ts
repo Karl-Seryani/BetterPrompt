@@ -12,7 +12,6 @@
  */
 
 import * as vscode from 'vscode';
-import { logger } from '../utils/logger';
 
 // ============================================================================
 // TYPES
@@ -147,7 +146,6 @@ export function extractSemanticContext(
   // Check consent first
   const hasConsent = hasSemanticConsent();
   if (!hasConsent) {
-    logger.debug('Semantic context skipped - no consent');
     return null;
   }
 
@@ -165,7 +163,6 @@ export function extractSemanticContext(
   // Only analyze supported file types
   const supportedLanguages = ['typescript', 'typescriptreact', 'javascript', 'javascriptreact'];
   if (!supportedLanguages.includes(doc.languageId)) {
-    logger.debug(`Semantic context skipped - unsupported language: ${doc.languageId}`);
     return null;
   }
 
@@ -180,12 +177,6 @@ export function extractSemanticContext(
     documentation: extractDocumentation(content, filePath),
     patterns: detectPatterns(content),
   };
-
-  logger.debug('Semantic context extracted', {
-    functions: context.functions.length,
-    classes: context.classes.length,
-    imports: context.imports.length,
-  });
 
   return context;
 }

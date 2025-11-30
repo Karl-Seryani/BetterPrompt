@@ -6,7 +6,10 @@
  */
 
 import * as vscode from 'vscode';
-import { DEFAULT_RATE_LIMIT, DEFAULT_RATE_WINDOW_MS } from '../../core/constants';
+
+// Default rate limiting configuration
+const DEFAULT_RATE_LIMIT = 10; // 10 requests per minute
+const DEFAULT_RATE_WINDOW_MS = 60000; // 1 minute in milliseconds
 
 export interface RateLimiterConfig {
   maxRequests: number;

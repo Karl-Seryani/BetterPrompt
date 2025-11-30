@@ -1,157 +1,74 @@
-# BetterPrompt for GitHub Copilot
+# BetterPrompt
 
-**Supercharge your Copilot Chat with intelligent prompt enhancement**
+Intelligent prompt enhancement for GitHub Copilot Chat.
 
-Type `@betterprompt` in GitHub Copilot Chat to transform simple prompts into detailed, actionable requests that get better AI responses.
-
-## Features
-
-- **Intelligent Enhancement** - Automatically understands your intent and adds the right details
-- **Context Aware** - Knows your current file, tech stack, and selected code
-- **Native Chat Integration** - Use `@betterprompt` directly in Copilot Chat
-- **Fast Analysis** - Analyzes prompts in <100ms
-- **Zero Config** - Works immediately with your Copilot subscription
-
-## Quick Start
-
-### In Copilot Chat (Recommended)
-
-Just type `@betterprompt` followed by your prompt:
-
-```
-@betterprompt make a login page
-```
-
-BetterPrompt analyzes and enhances your prompt, showing you the improved version.
-
-### Chat Modes
-
-**Review Mode** (default) - Shows enhancement before sending:
-```
-@betterprompt /review build an API
-```
-
-**Auto Mode** - Enhances and sends directly to Copilot:
-```
-@betterprompt /auto build an API
-```
-
-## Examples
-
-### Basic Enhancement
-
-**Your prompt:**
-```
-@betterprompt make a login page
-```
-
-**BetterPrompt enhances it to:**
-```
-Create a login page with:
-- Email and password input fields with client-side validation
-- Form submission that sends credentials to a /api/auth/login endpoint
-- Loading state while authenticating
-- Error messages for invalid credentials or network failures
-- Redirect to dashboard on successful login
-- "Forgot password" link
-- Responsive design that works on mobile and desktop
-```
-
-### Context-Aware Enhancement
-
-When you're editing `App.tsx` in a React project:
-
-**Your prompt:**
-```
-@betterprompt add a loading state
-```
-
-**BetterPrompt sees your context and enhances:**
-```
-Add a loading state to this React component (App.tsx):
-- Add an `isLoading` prop (boolean)
-- Show a spinner or 'Loading...' text when loading
-- Disable interactions during loading to prevent double-clicks
-- Maintain the component's width to prevent layout shift
-
-Should the loading state be managed internally or passed as a prop?
-```
-
-**It knew you were in React without you having to say it!**
+Type `@betterprompt` followed by a simple request, and it transforms into a detailed, actionable prompt with context from your workspace.
 
 ## How It Works
 
-### Intent Detection
-BetterPrompt detects what you're trying to do:
+1. **You type a simple prompt** → `@betterprompt make a login page`
 
-| Intent | Trigger Words | Response Style |
-|--------|---------------|----------------|
-| **BUILD** | make, create, build | Actionable requirements, phased for big projects |
-| **LEARN** | explain, teach, how | Teacher mode with examples |
-| **FIX** | fix, debug, error | Diagnostic, asks for error details |
-| **IMPROVE** | refactor, optimize | Professional, specific improvements |
-| **CONFIGURE** | setup, install, deploy | Step-by-step instructions |
+2. **Context is gathered** → Detects your current file, tech stack, selected code, and project structure.
 
-### Context Awareness
-Automatically detects and includes:
-- Current file you're editing
-- Tech stack (React, Next.js, Vue, Express, etc.)
+3. **Copilot enhances** → Uses your GitHub Copilot subscription to rewrite the prompt with relevant details.
+
+4. **You get the result** → A detailed prompt ready to use, or sent directly to Copilot in auto mode.
+
+```
+@betterprompt make a login page
+
+→ Create a login page with:
+  - Email and password fields with validation
+  - Form submission to /api/auth/login
+  - Loading state during authentication
+  - Error handling for invalid credentials
+  - Redirect on success
+  - Responsive design
+```
+
+## Context Detection
+
+BetterPrompt automatically detects context from your workspace:
+
+**Basic (always available)**
+- Current file path and language
+- Tech stack (React, Next.js, Express, Django, etc.)
 - Selected code in your editor
-- TypeScript/linter errors in your file
+- Diagnostic errors from TypeScript/ESLint
 
-## Configuration
+**Structural (always available)**
+- Project structure (src/, tests/, components/)
+- File type distribution
+- Project style (monorepo, webapp, API, library)
 
-Open Settings (`Cmd+,`) and search for "BetterPrompt":
+**Semantic (opt-in)**
+- Function signatures and exports
+- Class structures
+- Import/export patterns
 
-| Setting | Description | Default |
-|---------|-------------|---------|
-| `betterprompt.enabled` | Enable/disable extension | `true` |
-| `betterprompt.enhancementThreshold` | Min score (0-100) to trigger enhancement | `30` |
-| `betterprompt.chatMode` | Default chat mode (review/auto) | `review` |
-| `betterprompt.showDiff` | Show before/after diff | `true` |
+This context is included when enhancing your prompt, so Copilot knows what you're working with.
 
-## Commands
+## Usage
 
-| Command | Shortcut | Description |
-|---------|----------|-------------|
-| `BetterPrompt: Optimize Current Prompt` | `Cmd+Shift+E` | Enhance a prompt manually |
-| `BetterPrompt: Open Settings` | - | Quick access to settings |
+**Review mode** (default) - Shows the enhanced prompt before sending:
+```
+@betterprompt make an API endpoint
+```
+
+**Auto mode** - Enhances and sends directly to Copilot:
+```
+@betterprompt /auto make an API endpoint
+```
+
+## Settings
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| `chatMode` | review | Default mode (review or auto) |
+| `maxRequestsPerMinute` | 10 | Rate limit for enhancements |
 
 ## Requirements
 
-- **VS Code 1.85.0+**
-- **GitHub Copilot** subscription
-- **GitHub Copilot Chat** extension
-
-## Free Fallback: Groq
-
-If you hit your Copilot quota, BetterPrompt can use Groq (free):
-
-1. Get a free API key at [console.groq.com](https://console.groq.com)
-2. Run command: `BetterPrompt: Set Groq API Key`
-3. BetterPrompt will automatically use it when Copilot isn't available
-
-## Troubleshooting
-
-### "@betterprompt" not appearing in chat?
-Make sure GitHub Copilot Chat extension is installed and you're signed in.
-
-### Enhancement not working?
-1. Check Copilot is active (look for Copilot icon in status bar)
-2. Try reloading VS Code
-3. Verify your Copilot subscription is active
-4. If quota exhausted, add a Groq API key (free)
-
-## Privacy
-
-- **Local analysis** - Prompt analysis runs on your machine
-- **No telemetry** - Zero tracking by default
-- **Uses Copilot** - Enhancement uses your existing Copilot subscription (or Groq)
-
-## License
-
-MIT License
-
----
-
-**Made with care for better Copilot interactions**
+- VS Code 1.85+
+- GitHub Copilot subscription
+- GitHub Copilot Chat extension
