@@ -10,10 +10,10 @@ export {
   IssueSeverity,
   type VaguenessIssue,
   type AnalysisResult,
-} from '../../core/analyzer.js';
+} from './core/analyzer.js';
 
 // Import for local use
-import { analyzePrompt, type AnalysisResult } from '../../core/analyzer.js';
+import { analyzePrompt, type AnalysisResult } from './core/analyzer.js';
 
 /**
  * Result of prompt enhancement
