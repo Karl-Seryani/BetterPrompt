@@ -119,8 +119,9 @@ function analyzeDirectories(files: vscode.Uri[], rootPath: string): StructuralCo
   let hasConfigDir = false;
 
   for (const file of files) {
-    const relativePath = path.relative(rootPath, file.fsPath);
-    const parts = relativePath.split(path.sep);
+    // Normalize to forward slashes for consistent regex matching across platforms
+    const relativePath = path.relative(rootPath, file.fsPath).replace(/\\/g, '/');
+    const parts = relativePath.split('/');
 
     // Track top-level directories
     if (parts.length > 1) {
@@ -307,8 +308,9 @@ function calculateSize(files: vscode.Uri[], rootPath: string): StructuralContext
   let maxDepth = 0;
 
   for (const file of files) {
-    const relativePath = path.relative(rootPath, file.fsPath);
-    const parts = relativePath.split(path.sep);
+    // Normalize to forward slashes for consistent behavior across platforms
+    const relativePath = path.relative(rootPath, file.fsPath).replace(/\\/g, '/');
+    const parts = relativePath.split('/');
 
     // Track depth (exclude the file itself)
     const depth = parts.length - 1;
@@ -319,7 +321,7 @@ function calculateSize(files: vscode.Uri[], rootPath: string): StructuralContext
     // Track unique directories
     let currentPath = '';
     for (let i = 0; i < parts.length - 1; i++) {
-      currentPath = currentPath ? path.join(currentPath, parts[i]) : parts[i];
+      currentPath = currentPath ? `${currentPath}/${parts[i]}` : parts[i];
       dirs.add(currentPath);
     }
   }

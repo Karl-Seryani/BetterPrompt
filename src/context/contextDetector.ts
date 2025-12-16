@@ -74,7 +74,9 @@ export async function detectContext(): Promise<WorkspaceContext> {
       path: document.uri.fsPath,
       name: path.basename(document.uri.fsPath),
       language: document.languageId,
-      relativePath: workspaceRoot ? path.relative(workspaceRoot, document.uri.fsPath) : document.uri.fsPath,
+      relativePath: workspaceRoot
+        ? path.relative(workspaceRoot, document.uri.fsPath).replace(/\\/g, '/')
+        : document.uri.fsPath,
     };
 
     // Detect selected code

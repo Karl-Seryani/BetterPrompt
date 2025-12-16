@@ -107,7 +107,7 @@
     "compile": "tsc -p ./ && npm run copy-assets",
     "webpack": "webpack --mode development",
     "webpack:prod": "webpack --mode production && npm run copy-assets",
-    "copy-assets": "mkdir -p dist/core/prompts && cp core/prompts/*.txt dist/core/prompts/",
+    "copy-assets": "node -e \"const fs=require('fs'),p=require('path');const d='dist/core/prompts';fs.mkdirSync(d,{recursive:true});fs.readdirSync('core/prompts').filter(f=>f.endsWith('.txt')).forEach(f=>fs.copyFileSync(p.join('core/prompts',f),p.join(d,f)))\"",
     "watch": "tsc -watch -p ./",
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint src --ext ts",
